@@ -1,0 +1,16 @@
+{
+  "prefix": "PREFIX",
+  "token": "DISCORDBOTTOKEN",
+  "permissions": "PERMISSIONS",
+  "application_id": "APPID",
+  "owners": [
+    YOURDISCORDID
+  ],
+  "AUTHOR": "le script kiddie",
+  "SERVERNAME": "SRV",
+  "SERVERPORT": "PORT1",
+  "SERVERPORT2": "PORT2",
+  "SERVERPORT3": "PORT3",
+  "SERVERPORT4": "PORT4",
+  "RCON_PASSWORD": "RCONPASS"
+}
