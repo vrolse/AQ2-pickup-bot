@@ -23,7 +23,7 @@ intents = disnake.Intents.default()
 
 bot = Bot(command_prefix=config["prefix"], intents=intents)
 
-DISCORD_CHANNELID = int(os.getenv('CHANNELID')) #"1042402671484743730"
+DISCORD_CHANNELID = int(os.getenv('CHANNELID'))
 MVD2URL = "https://vrol.se/demos/"
 MVD2URL2 = "https://demos.aq2world.com/"
 serverName = "pickup @ aq2.vrol.se:27930"
