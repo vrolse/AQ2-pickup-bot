@@ -19,7 +19,8 @@ else:
     with open("config.json") as file:
         config = json.load(file)
 
-GUILDID = int(os.getenv('GUILDID'))
+#Add what needs to be loaded from config.json
+GUILDID = int(config["GUILD_ID"])
 
 class General(commands.Cog, name="general"):
     def __init__(self, bot):
@@ -53,19 +54,14 @@ class General(commands.Cog, name="general"):
         )
         embed.add_field(
             name="Prefix:",
-            value=f"/ (Slash Commands)",
+            value="/ (Slash Commands)",
             inline=False
         )
         embed.set_footer(
             text=f"Requested by {context.author}"
         )
         await context.send(embed=embed, ephemeral=True)
-    """
-    @commands.command(
-        name="ping",
-        description="Check if the bot is alive.",
-    )
-    """
+
     @commands.slash_command(
         guild_ids=[GUILDID],
         name="ping",
@@ -81,7 +77,7 @@ class General(commands.Cog, name="general"):
             description=f"The bot latency is {round(self.bot.latency * 1000)}ms.",
             color=0x9C84EF
         )
-        await context.send(embed=embed)
+        await context.send(embed=embed, ephemeral=True)
     
 def setup(bot):
     bot.add_cog(General(bot))

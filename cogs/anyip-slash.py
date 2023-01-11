@@ -1,4 +1,11 @@
-import json, logging, subprocess, os
+"""
+Copyright © Krypton 2021 - https://github.com/kkrypt0nn (https://krypt0n.co.uk)
+Description:
+This is a template to create your own discord bot in python.
+
+Version: 4.0.1
+"""
+import json, logging, subprocess, os, sys
 from disnake.ext.commands import Context
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Option, OptionType
@@ -6,17 +13,17 @@ from helpers import checks
 
 logging.basicConfig(level=logging.INFO)
 
-qs = '/home/bot/AQ2-pickup/qstat'
-GUILDID = int(os.getenv('GUILDID'))
-
-"""
 # Only if you want to use variables that are in the config.json file.
 if not os.path.isfile("config.json"):
     sys.exit("'config.json' not found! Please add it and try again.")
 else:
     with open("config.json") as file:
         config = json.load(file)
-"""
+
+#Add what needs to be loaded from config.json
+qs = config["QSTAT"]
+GUILDID = int(config["GUILD_ID"])
+
 # Here we name the cog and create a new class for the cog.
 class anyip(commands.Cog, name="anyip-slash"):
     def __init__(self, bot):
@@ -42,10 +49,10 @@ class anyip(commands.Cog, name="anyip-slash"):
         if ip is None:
             return await interaction.send("`Shiieeeet.. did you forget the IP?!`")
         try:
-            test = [qs, '-q2s', '-R', '-P', '-sort', 'F', '-json']
-            test.insert(2, '{}'.format(ip))
+            qstat = [qs, '-q2s', '-R', '-P', '-sort', 'F', '-json']
+            qstat.insert(2, '{}'.format(ip))
             scores = []
-            s = subprocess.check_output(test)
+            s = subprocess.check_output(qstat)
             data = json.loads(s)
             for te in data:
                 print()

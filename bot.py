@@ -6,8 +6,8 @@ This is a template to create your own discord bot in python.
 Version: 4.0.1
 """
 
-import json, os, platform, random, sys, re, asyncio, disnake, exceptions, requests
-#import requests
+import json, os, platform, random, sys, re, asyncio, disnake, exceptions
+
 from disnake import ApplicationCommandInteraction
 from disnake.ext import tasks, commands
 from disnake.ext.commands import Bot
@@ -18,17 +18,19 @@ if not os.path.isfile("config.json"):
 else:
     with open("config.json") as file:
         config = json.load(file)
+if not os.path.isfile("qstat"):
+    sys.exit("'qstat' not found! Please add it and try again.")
 
 intents = disnake.Intents.default()
 
+#Add what needs to be loaded from config.json
 bot = Bot(command_prefix=config["prefix"], intents=intents)
 
-DISCORD_CHANNELID = int(os.getenv('CHANNELID'))
-MVD2URL = "https://vrol.se/demos/"
-MVD2URL2 = "https://demos.aq2world.com/"
-serverName = "pickup @ aq2.vrol.se:27930"
-serverName3 = "cw/pickup @ aq2.vrol.se:27940"
-serverName2 = "chaos @ aq2.vrol.se:27950"
+DISCORD_CHANNELID = int(config["CHANNEL_ID"])
+MVD2URL = config["MVD2URL"]
+serverName = config["SRV_NAME"]
+serverName2 = config["SRV_NAME2"]
+serverName3 = config["SRV_NAME3"]
 
 # The code in this even is executed when the bot is ready
 @bot.event
@@ -39,9 +41,9 @@ async def on_ready():
     print(f"Running on: {platform.system()} {platform.release()} ({os.name})")
     print("-------------------")
     status_task.start()
-    chaos_over.start()
     pickup_over.start()
     cw_over.start()
+    chaos_over.start()
 
 # Setup the game status task of the bot
 @tasks.loop(minutes=20.0)
@@ -52,7 +54,7 @@ async def status_task():
 @tasks.loop()
 async def pickup_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
-    file_path = '/home/bot/matchlogs2/pickup.txt'
+    file_path = '/home/bot/matchlogs/pickup.txt'
     get_time = lambda f: os.stat(f).st_ctime
     fn = file_path
     prev_time = get_time(fn)
@@ -72,7 +74,10 @@ async def pickup_over():
                     color=0xE02B2B,
                     )
                 embedVar.set_footer(text=serverName)
-                file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
+                if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
+                    file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
+                else:
+                    file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
                 embedVar.set_thumbnail(url="attachment://map.jpg")
                 embedVar.add_field(name='Team Uno', value=t1score)
                 embedVar.add_field(name='Team Dos', value=t2score)
@@ -83,7 +88,7 @@ async def pickup_over():
 @tasks.loop()
 async def chaos_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
-    file_path = '/home/bot/matchlogs/chaos.txt'
+    file_path = '/home/bot/matchlogs/cw.txt'
     get_time = lambda f: os.stat(f).st_ctime
     fn = file_path
     prev_time = get_time(fn)
@@ -99,11 +104,14 @@ async def chaos_over():
                 mapname = scores.group(3)
                 embedVar = disnake.Embed(
                     title=':map:    {}    '.format(mapname),
-                    description=MVD2URL2,
+                    description=MVD2URL,
                     color=0xE02B2B,
                     )
                 embedVar.set_footer(text=serverName2)
-                file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
+                if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
+                    file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
+                else:
+                    file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
                 embedVar.set_thumbnail(url="attachment://map.jpg")
                 embedVar.add_field(name='Team Uno', value=t1score)
                 embedVar.add_field(name='Team Dos', value=t2score)
@@ -114,7 +122,7 @@ async def chaos_over():
 @tasks.loop()
 async def cw_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
-    file_path = '/home/bot/matchlogs2/cw.txt'
+    file_path = '/home/bot/matchlogs/chaos.txt'
     get_time = lambda f: os.stat(f).st_ctime
     fn = file_path
     prev_time = get_time(fn)
@@ -134,7 +142,10 @@ async def cw_over():
                     color=0xE02B2B,
                     )
                 embedVar.set_footer(text=serverName3)
-                file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
+                if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
+                    file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
+                else:
+                    file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
                 embedVar.set_thumbnail(url="attachment://map.jpg")
                 embedVar.add_field(name='Team Uno', value=t1score)
                 embedVar.add_field(name='Team Dos', value=t2score)
