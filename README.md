@@ -15,7 +15,7 @@ Also many thanks to FragBait @ [aq2world](https://discord.aq2world.com) for the 
 * [kkrypt0nn's discordbot-template](https://github.com/kkrypt0nn/Python-Discord-Bot-Template/) 
 * [Qstat](https://github.com/Unity-Technologies/qstat/)
 * [pyrcon](https://github.com/texnofobix/pyrcon/)
-* [q2admin with lua](https://github.com/m4son/q2admin)
+* [q2admin with lua](https://github.com/actionquake/q2admin/tree/aqtion)
 * lastmatch.lua to use with q2admin to get info from '!last and/or /last' command with the bot. Path needs to be edited.
 * and all imports (might be some that is not needed that I have missed to remove..)
 
