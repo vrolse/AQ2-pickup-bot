@@ -170,108 +170,40 @@ class Aq2(commands.Cog, name="AQ2-slash"):
     @commands.slash_command(
         guild_ids=[GUILDID],
         name="last",
-        description="See results from the latest map on pickup or cw server.",
+        description="See results from the latest map on pickup or cw servers.",
     )
     @checks.not_blacklisted()
     async def last(self, context, result: str = commands.Param(choices={"pickup", "pickup_interp", "chaos", "cw"})):
-        if not result:
-            await context.send("`Use pickup, pickup_interp, chaos or cw`")
-        elif result .lower()=='pickup':
-            file_path = '/home/bot/matchlogs/pickup.txt'
-            with open(file_path, "r") as f:
-                line2 = f.readlines()
-            scores = re.match("(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
-            if scores:
-                date = scores.group(1)
-                t1score = scores.group(2)
-                t2score = scores.group(3)
-                mapname = scores.group(4)
-                embedVar = disnake.Embed(
-                    title=':map:    {}    '.format(mapname), 
-                    description=date, 
-                    color=0xE02B2B,
-                    )
-                embedVar.set_footer(text=MVD2URL)
-                if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
-                    file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
-                else:
-                    file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
-                embedVar.set_thumbnail(url="attachment://map.jpg")
-                embedVar.add_field(name='Team Uno', value=t1score, inline = True)
-                embedVar.add_field(name='Team Dos', value=t2score, inline = True)
-                await context.send(file=file, embed=embedVar)
+        if result .lower()=='pickup':
+            file_path = '../matchlogs/pickup.txt'
         elif result .lower()=='cw':
-            file_path = '/home/bot/matchlogs/cw.txt'
-            with open(file_path, "r") as f:
-                line2 = f.readlines()
-            scores = re.match("(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
-            if scores:
-                date = scores.group(1)
-                t1score = scores.group(2)
-                t2score = scores.group(3)
-                mapname = scores.group(4)
-                embedVar = disnake.Embed(
-                    title=':map:    {}    '.format(mapname),
-                    description=date,
-                    color=0xE02B2B,
-                    )
-                embedVar.set_footer(text=MVD2URL)
-                if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
-                    file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
-                else:
-                    file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
-                embedVar.set_thumbnail(url="attachment://map.jpg")
-                embedVar.add_field(name='Team Uno', value=t1score, inline = True)
-                embedVar.add_field(name='Team Dos', value=t2score, inline = True)
-                await context.send(file=file, embed=embedVar)
+            file_path = '../matchlogs/cw.txt'
         elif result .lower()=='chaos':
-            file_path = '/home/bot/matchlogs/chaos.txt'
-            with open(file_path, "r") as f:
-                line2 = f.readlines()
-            scores = re.match("(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
-            if scores:
-                date = scores.group(1)
-                t1score = scores.group(2)
-                t2score = scores.group(3)
-                mapname = scores.group(4)
-                embedVar = disnake.Embed(
-                    title = ':map:    {}    '.format(mapname),
-                    description=date,
-                    color = 0xE02B2B,
-                    )
-                embedVar.set_footer(text=MVD2URL)
-                if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
-                    file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
-                else:
-                    file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
-                embedVar.set_thumbnail(url="attachment://map.jpg")
-                embedVar.add_field(name='Team Uno', value=t1score, inline = True)
-                embedVar.add_field(name='Team Dos', value=t2score, inline = True)
-                await context.send(file=file, embed=embedVar)
+            file_path = '../matchlogs/chaos.txt'
         elif result .lower()=='pickup_interp':
-            file_path = '/home/bot/matchlogs/pickup_interp.txt'
-            with open(file_path, "r") as f:
-                line2 = f.readlines()
-            scores = re.match("(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
-            if scores:
-                date = scores.group(1)
-                t1score = scores.group(2)
-                t2score = scores.group(3)
-                mapname = scores.group(4)
-                embedVar = disnake.Embed(
-                    title = ':map:    {}    '.format(mapname),
-                    description=date,
-                    color = 0xE02B2B,
-                    )
-                embedVar.set_footer(text=MVD2URL)
-                if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
-                    file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
-                else:
-                    file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
-                embedVar.set_thumbnail(url="attachment://map.jpg")
-                embedVar.add_field(name='Team Uno', value=t1score, inline = True)
-                embedVar.add_field(name='Team Dos', value=t2score, inline = True)
-                await context.send(file=file, embed=embedVar)
+            file_path = '../matchlogs/pickup_interp.txt'
+        with open(file_path, "r") as f:
+            line2 = f.readlines()
+        scores = re.match("(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
+        if scores:
+            date = scores.group(1)
+            t1score = scores.group(2)
+            t2score = scores.group(3)
+            mapname = scores.group(4)
+            embedVar = disnake.Embed(
+                title = ':map:    {}    '.format(mapname),
+                description=date,
+                color = 0xE02B2B,
+                )
+            embedVar.set_footer(text=MVD2URL)
+            if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
+                file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
+            else:
+                file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
+            embedVar.set_thumbnail(url="attachment://map.jpg")
+            embedVar.add_field(name='Team Uno', value=t1score, inline = True)
+            embedVar.add_field(name='Team Dos', value=t2score, inline = True)
+            await context.send(file=file, embed=embedVar)
         else:
             await context.send("`Use pickup, pickup_interp, chaos or cw`")
 

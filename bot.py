@@ -31,6 +31,7 @@ MVD2URL = config["MVD2URL"]
 serverName = config["SRV_NAME"]
 serverName2 = config["SRV_NAME2"]
 serverName3 = config["SRV_NAME3"]
+serverName4 = config["SRV_NAME4"]
 
 # The code in this even is executed when the bot is ready
 @bot.event
@@ -55,7 +56,7 @@ async def status_task():
 @tasks.loop()
 async def pickup_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
-    file_path = '/home/bot/matchlogs/pickup.txt'
+    file_path = '../matchlogs/pickup.txt'
     get_time = lambda f: os.stat(f).st_ctime
     fn = file_path
     prev_time = get_time(fn)
@@ -89,7 +90,7 @@ async def pickup_over():
 @tasks.loop()
 async def chaos_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
-    file_path = '/home/bot/matchlogs/cw.txt'
+    file_path = '../matchlogs/cw.txt'
     get_time = lambda f: os.stat(f).st_ctime
     fn = file_path
     prev_time = get_time(fn)
@@ -123,7 +124,7 @@ async def chaos_over():
 @tasks.loop()
 async def cw_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
-    file_path = '/home/bot/matchlogs/chaos.txt'
+    file_path = '../matchlogs/chaos.txt'
     get_time = lambda f: os.stat(f).st_ctime
     fn = file_path
     prev_time = get_time(fn)
@@ -157,7 +158,7 @@ async def cw_over():
 @tasks.loop()
 async def pickup_interp_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
-    file_path = '/home/bot/matchlogs/pickup_interp.txt'
+    file_path = '../matchlogs/pickup_interp.txt'
     get_time = lambda f: os.stat(f).st_ctime
     fn = file_path
     prev_time = get_time(fn)
@@ -176,7 +177,7 @@ async def pickup_interp_over():
                     description=MVD2URL,
                     color=0xE02B2B,
                     )
-                embedVar.set_footer(text=serverName3)
+                embedVar.set_footer(text=serverName4)
                 if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
                     file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
                 else:
