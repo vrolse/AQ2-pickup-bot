@@ -45,7 +45,7 @@ async def on_ready():
     pickup_over.start()
     cw_over.start()
     chaos_over.start()
-    pickup_interp_over.start()
+    #pickup_interp_over.start()
 
 # Setup the game status task of the bot
 @tasks.loop(minutes=20.0)
@@ -155,39 +155,39 @@ async def cw_over():
                 await channel.send(file=file, embed=embedVar)
         await asyncio.sleep(10)
 
-@tasks.loop()
-async def pickup_interp_over():
-    channel = bot.get_channel(DISCORD_CHANNELID)
-    file_path = '../matchlogs/pickup_interp.txt'
-    get_time = lambda f: os.stat(f).st_ctime
-    fn = file_path
-    prev_time = get_time(fn)
-    while True:
-        t = get_time(fn)
-        if t != prev_time:
-            with open(file_path, "r") as f:
-                line2 = f.readlines()
-            scores = re.match(".+> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
-            if scores:
-                t1score = scores.group(1)
-                t2score = scores.group(2)
-                mapname = scores.group(3)
-                embedVar = disnake.Embed(
-                    title=':map:    {}    '.format(mapname),
-                    description=MVD2URL,
-                    color=0xE02B2B,
-                    )
-                embedVar.set_footer(text=serverName4)
-                if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
-                    file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
-                else:
-                    file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
-                embedVar.set_thumbnail(url="attachment://map.jpg")
-                embedVar.add_field(name='Team Uno', value=t1score)
-                embedVar.add_field(name='Team Dos', value=t2score)
-                prev_time = t
-                await channel.send(file=file, embed=embedVar)
-        await asyncio.sleep(10)
+# @tasks.loop()
+# async def pickup_interp_over():
+#     channel = bot.get_channel(DISCORD_CHANNELID)
+#     file_path = '../matchlogs/pickup_interp.txt'
+#     get_time = lambda f: os.stat(f).st_ctime
+#     fn = file_path
+#     prev_time = get_time(fn)
+#     while True:
+#         t = get_time(fn)
+#         if t != prev_time:
+#             with open(file_path, "r") as f:
+#                 line2 = f.readlines()
+#             scores = re.match(".+> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
+#             if scores:
+#                 t1score = scores.group(1)
+#                 t2score = scores.group(2)
+#                 mapname = scores.group(3)
+#                 embedVar = disnake.Embed(
+#                     title=':map:    {}    '.format(mapname),
+#                     description=MVD2URL,
+#                     color=0xE02B2B,
+#                     )
+#                 embedVar.set_footer(text=serverName4)
+#                 if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
+#                     file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
+#                 else:
+#                     file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
+#                 embedVar.set_thumbnail(url="attachment://map.jpg")
+#                 embedVar.add_field(name='Team Uno', value=t1score)
+#                 embedVar.add_field(name='Team Dos', value=t2score)
+#                 prev_time = t
+#                 await channel.send(file=file, embed=embedVar)
+#         await asyncio.sleep(10)
 
 # Removes the default help command of discord.py to be able to create our custom help command.
 bot.remove_command("help")
@@ -275,6 +275,14 @@ async def on_slash_command_error(interaction: ApplicationCommandInteraction, err
         )
         print("A blacklisted user tried to execute a command.")
         return await interaction.send(embed=embed)
+    elif isinstance(error, exceptions.UserNotAdmin):
+        embed = disnake.Embed(
+            title="Error!",
+            description="You don't have the correct role to execute this command!",
+            color=0xE02B2B
+        )
+        print("Someone that is not an admin tried to execute a command.")
+        return await interaction.send(embed=embed, ephemeral=True)
     elif isinstance(error, commands.errors.MissingPermissions):
         embed = disnake.Embed(
             title="Error!",
@@ -291,6 +299,7 @@ async def on_slash_command_error(interaction: ApplicationCommandInteraction, err
         )
         print("Someone with the wrong role tried to execute a command.")
         return await interaction.send(embed=embed, ephemeral=True)
+    
     raise error
 
 # Run the bot with the token
