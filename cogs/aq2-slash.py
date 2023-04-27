@@ -25,7 +25,6 @@ logging.basicConfig(level=logging.INFO)
 
 #Add what needs to be loaded from config.json
 GUILDID = int(config["GUILD_ID"])
-ROLEID = int(config["ROLE_ID"])
 servername = config["SERVERNAME"]
 serverport = config["SERVERPORT"]
 serverport2 = config["SERVERPORT2"]
@@ -51,7 +50,7 @@ pickup = [qs, '-q2s', servername + ':' + serverport3, '-R', '-P', '-sort', 'F', 
 cw = [qs, '-q2s', servername + ':' + serverport4, '-R', '-P', '-sort', 'F', '-json']
 chaos = [qs, '-q2s', servername + ':' + serverport5, '-R', '-P', '-sort', 'F', '-json']
 tdm = [qs, '-q2s', servername + ':' + serverport6, '-R', '-P', '-sort', 'F', '-json']
-pickup_interp = [qs, '-q2s', servername + ':' + serverport7, '-R', '-P', '-sort', 'F', '-json']
+ctf = [qs, '-q2s', servername + ':' + serverport7, '-R', '-P', '-sort', 'F', '-json']
 new = [qs, '-q2s', 'IP:PORT', '-R', '-P', '-sort', 'F', '-json']
 new2 = [qs, '-q2s', 'IP:PORT', '-R', '-P', '-sort', 'F', '-json']
 
@@ -90,17 +89,14 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         description="Get status from the different servers.",
     )
     @checks.not_blacklisted()
-    @checks.is_owner()
-    @commands.has_role(ROLEID)
-    async def status(self, context, check: str = commands.Param(name="server", choices=["pickup", "cw", "chaos", "pickup_interp"])) -> None:
+    @checks.admin()
+    async def status(self, context, check: str = commands.Param(name="server", choices=["pickup", "cw", "chaos"])) -> None:
         if not check:
-            await context.send("`Use one of the following: pickup, cw, chaos, pickup_interp`")
+            await context.send("`Use one of the following: pickup, cw, chaos`")
         elif check == "pickup":
             result = conn3.send('status v')
         elif check == "cw":
             result = conn4.send('status v')
-        elif check == "pickup_interp":
-            result = conn7.send('status v')
         elif check == "chaos":
             result = conn5.send('status v')
         await context.send('```yaml\n{}\n```'.format(result), ephemeral=True)
@@ -111,15 +107,12 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         description="Change map on server.",
     )
     @checks.not_blacklisted()
-    @checks.is_owner()
-    @commands.has_role(ROLEID)
-    async def changemap(self, context, server: str = commands.Param(name="server", choices=["pickup", "cw", "chaos", "pickup_interp"]), map: str = commands.Param(name="mapname")):
+    @checks.admin()
+    async def changemap(self, context, server: str = commands.Param(name="server", choices=["pickup", "cw", "chaos"]), map: str = commands.Param(name="mapname")):
         if map is None:
             return await context.send("`You need to write a mapname`")
         if server == "pickup":
             conn3.send('gamemap ' + map)
-        elif server == "pickup_interp":
-            conn7.send('gamemap ' + map)
         elif server == "cw":
             conn4.send("gamemap " + map)
         elif server == "chaos":
@@ -132,16 +125,13 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         description="Test of lrcon. See cmds use list",
     )
     @checks.not_blacklisted()
-    @checks.is_owner()
-    @commands.has_role(ROLEID)
-    async def lrcon(self, context, *, server: str = commands.Param(choices={"pickup", "cw", "chaos", "pickup_interp", "list"}), cmd = True) -> None:
+    @checks.admin()
+    async def lrcon(self, context, *, server: str = commands.Param(choices={"pickup", "cw", "chaos", "list"}), cmd = True) -> None:
         if server == "list":
             result = conn3.send("listlrconcmds")
             return await context.send('```yaml\n{}\n```'.format(result), ephemeral=True)
         elif server == "pickup":
             result = conn3.send(cmd)
-        elif server == "pickup_interp":
-            result = conn7.send(cmd)
         elif server == "cw":
             result = conn4.send(cmd)
         elif server == "chaos":
@@ -154,15 +144,12 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         description="Reset the server if something is wrong or for fun just to be an asshole 😄",
     )
     @checks.not_blacklisted()
-    @checks.is_owner()
-    @commands.has_role(ROLEID)
-    async def reset(self, context, *, server: str = commands.Param(choices={"pickup", "cw", "chaos", "pickup_interp"})):
+    @checks.admin()
+    async def reset(self, context, *, server: str = commands.Param(choices={"pickup", "cw", "chaos"})):
         if server == "pickup":
             conn3.send('recycle Reset server!')
         elif server == "cw":
             conn4.send('recycle Reset server!')
-        elif server =="pickup_interp":
-            conn7.send('recycle Reset server!')
         elif server == "chaos":
             conn5.send('recycle Reset server!')
         await context.send(f'`{server}-server reset by {context.author}!`')
@@ -173,15 +160,13 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         description="See results from the latest map on pickup or cw servers.",
     )
     @checks.not_blacklisted()
-    async def last(self, context, result: str = commands.Param(choices={"pickup", "pickup_interp", "chaos", "cw"})):
+    async def last(self, context, result: str = commands.Param(choices={"pickup", "chaos", "cw"})):
         if result .lower()=='pickup':
             file_path = '../matchlogs/pickup.txt'
         elif result .lower()=='cw':
             file_path = '../matchlogs/cw.txt'
         elif result .lower()=='chaos':
             file_path = '../matchlogs/chaos.txt'
-        elif result .lower()=='pickup_interp':
-            file_path = '../matchlogs/pickup_interp.txt'
         with open(file_path, "r") as f:
             line2 = f.readlines()
         scores = re.match("(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
@@ -205,7 +190,7 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             embedVar.add_field(name='Team Dos', value=t2score, inline = True)
             await context.send(file=file, embed=embedVar)
         else:
-            await context.send("`Use pickup, pickup_interp, chaos or cw`")
+            await context.send("`Use pickup, chaos or cw`")
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -213,10 +198,10 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         description="Check server.",
     )
     @checks.not_blacklisted()
-    async def check(self, context, server: str = commands.Param(choices={"pickup", "cw", "chaos", "pickup_interp"})
+    async def check(self, context, server: str = commands.Param(choices={"pickup", "cw", "chaos"})
     ):
         if server is None:
-            return await context.send("`Use one of the following: pickup, cw, chaos, pickup_interp`")
+            return await context.send("`Use one of the following: pickup, cw, chaos`")
         try:
             if server.lower()=='pickup':
                 qstat = pickup
@@ -224,8 +209,6 @@ class Aq2(commands.Cog, name="AQ2-slash"):
                 qstat = cw
             elif server.lower()=='chaos':
                 qstat = chaos
-            elif server.lower()=='pickup_interp':
-                qstat = pickup_interp
             scores = []
             s = subprocess.check_output(qstat)
             data = json.loads(s)
@@ -238,7 +221,7 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             await context.send(f"```json{nl}{te['name']}{nl+nl}Map: {te['map']}{nl}Time: {te['rules']['maptime']}{nl+nl}Team1 vs Team2{nl}  {te['rules']['t1']}       {te['rules']['t2']}{nl+nl}Frags:   Players:{nl}{scores}```")
         except KeyError as e:
             print(e)
-            await context.send("`Use one of the following: pickup, cw, chaos, pickup_interp`")
+            await context.send("`Use one of the following: pickup, cw, chaos`")
 
 def setup(bot):
     bot.add_cog(Aq2(bot))

@@ -8,7 +8,9 @@
   ],
   "GUILD_ID": "GUILDID",
   "CHANNEL_ID": "CHANNELID",
-  "ROLE_ID": "ROLEID",
+  "ROLE_ID": [
+    ROLEID
+  ],
   "AUTHOR": "@AQ2-pickup",
   "SERVERNAME": "SRVIP",
   "SERVERPORT": "PORT_1",

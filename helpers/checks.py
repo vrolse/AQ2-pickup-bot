@@ -44,3 +44,24 @@ def not_blacklisted() -> Callable[[T], T]:
         return True
 
     return commands.check(predicate)
+
+def admin() -> Callable[[T], T]:
+    """
+    This is a custom check to see if the user executing the command is blacklisted.
+    """
+
+    async def predicate(context: commands.Context) -> bool:
+        with open("config.json") as file:
+            data = json.load(file)
+        roles = context.author.roles
+        role_ids = data["ROLE_ID"]
+        roles = roles[1:]
+        matching_ids = [role.id for role in roles if role.id in role_ids]
+        if matching_ids:
+            print("HAPPY! :):", matching_ids)
+        else:
+            print("NOT HAPPY! :(")
+            raise UserNotAdmin
+        return True
+    
+    return commands.check(predicate)
