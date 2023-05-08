@@ -48,11 +48,6 @@ class General(commands.Cog, name="general"):
             inline=True
         )
         embed.add_field(
-            name="Python Version:",
-            value=f"{platform.python_version()}",
-            inline=True
-        )
-        embed.add_field(
             name="Prefix:",
             value="/ (Slash Commands)",
             inline=False

@@ -6,10 +6,7 @@ This is a template to create your own discord bot in python.
 Version: 4.0.1
 """
 import json, logging, pyrcon, re, subprocess, os, disnake, sys
-from random import choices
-from disnake import ApplicationCommandInteraction, Option, OptionType
 from disnake.ext import commands
-from disnake.ext.commands import Context
 from helpers import checks
 
 # Only if you want to use variables that are in the config.json file.
@@ -19,68 +16,24 @@ else:
     with open("config.json") as file:
         config = json.load(file)
 
-VERSION = 'MC4xMQ== //? h4x by TgT (¬_¬)'
+# Load the servers data from file
+with open('servers.json', 'r') as f:
+    data = json.load(f)
+    server_choices = []
+    for server in data['servers']:
+        server_choices.append(server['name'])
 
 logging.basicConfig(level=logging.INFO)
 
 #Add what needs to be loaded from config.json
 GUILDID = int(config["GUILD_ID"])
-servername = config["SERVERNAME"]
-serverport = config["SERVERPORT"]
-serverport2 = config["SERVERPORT2"]
-serverport3 = config["SERVERPORT3"]
-serverport4 = config["SERVERPORT4"]
-serverport5 = config["SERVERPORT5"]
-serverport6 = config["SERVERPORT6"]
-serverport7 = config["SERVERPORT7"]
-rcon_password = config["RCON_PASSWORD"]
 MVD2URL = config["MVD2URL"]
 qs = config["QSTAT"]
-
-conn = pyrcon.Q2RConnection(servername, serverport, rcon_password)
-conn2 = pyrcon.Q2RConnection(servername, serverport2, rcon_password)
-conn3 = pyrcon.Q2RConnection(servername, serverport3, rcon_password)
-conn4 = pyrcon.Q2RConnection(servername, serverport4, rcon_password)
-conn5 = pyrcon.Q2RConnection(servername, serverport5, rcon_password)
-conn7 = pyrcon.Q2RConnection(servername, serverport7, rcon_password)
-
-tp = [qs, '-q2s', servername + ':' + serverport, '-R', '-P', '-sort', 'F', '-json']
-dmc = [qs, '-q2s', servername + ':' + serverport2, '-R', '-P', '-sort', 'F', '-json']
-pickup = [qs, '-q2s', servername + ':' + serverport3, '-R', '-P', '-sort', 'F', '-json']
-cw = [qs, '-q2s', servername + ':' + serverport4, '-R', '-P', '-sort', 'F', '-json']
-chaos = [qs, '-q2s', servername + ':' + serverport5, '-R', '-P', '-sort', 'F', '-json']
-tdm = [qs, '-q2s', servername + ':' + serverport6, '-R', '-P', '-sort', 'F', '-json']
-ctf = [qs, '-q2s', servername + ':' + serverport7, '-R', '-P', '-sort', 'F', '-json']
-new = [qs, '-q2s', 'IP:PORT', '-R', '-P', '-sort', 'F', '-json']
-new2 = [qs, '-q2s', 'IP:PORT', '-R', '-P', '-sort', 'F', '-json']
-
-# Here we name the cog and create a new class for the cog.
+       
 class Aq2(commands.Cog, name="AQ2-slash"):
     def __init__(self, bot):
         self.bot = bot
-
-    @commands.slash_command(
-        guild_ids=[GUILDID],
-        name="iinfo",
-        description="Pickupbot info.",
-    )
-    @checks.not_blacklisted()
-    async def info(self, context):
-        embed = disnake.Embed(
-        title="AQ2-pickup",
-        description="Bot to check pickup-server and\nmaybe more to come. :)",
-        color=0xeee657
-        )
-        embed.add_field(
-        name="Author",
-        value=config['DEFAULT']['AUTHOR']
-        )
-        embed.add_field(
-        name="Bot Version",
-        value=VERSION
-        )
-        await context.send(embed=embed, delete_after=10, ephemeral=True)
-
+        
     """AQ2 commands below here"""
 
     @commands.slash_command(
@@ -90,16 +43,17 @@ class Aq2(commands.Cog, name="AQ2-slash"):
     )
     @checks.not_blacklisted()
     @checks.admin()
-    async def status(self, context, check: str = commands.Param(name="server", choices=["pickup", "cw", "chaos"])) -> None:
-        if not check:
-            await context.send("`Use one of the following: pickup, cw, chaos`")
-        elif check == "pickup":
-            result = conn3.send('status v')
-        elif check == "cw":
-            result = conn4.send('status v')
-        elif check == "chaos":
-            result = conn5.send('status v')
-        await context.send('```yaml\n{}\n```'.format(result), ephemeral=True)
+    async def status(self, context, servers: str = commands.Param(name="server", choices=server_choices)):
+        with open('servers.json', 'r') as f:
+            data = json.load(f)
+        for server in data['servers']:
+            if server['name'] == servers:
+                ip = server['ip']
+                port = server['port']
+                rcon = server['rcon']
+                conn = pyrcon.Q2RConnection(ip, port, rcon)
+                result = conn.send('status v')
+                await context.send('```yaml\n{}\n```'.format(result), ephemeral=True)
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -108,35 +62,34 @@ class Aq2(commands.Cog, name="AQ2-slash"):
     )
     @checks.not_blacklisted()
     @checks.admin()
-    async def changemap(self, context, server: str = commands.Param(name="server", choices=["pickup", "cw", "chaos"]), map: str = commands.Param(name="mapname")):
-        if map is None:
-            return await context.send("`You need to write a mapname`")
-        if server == "pickup":
-            conn3.send('gamemap ' + map)
-        elif server == "cw":
-            conn4.send("gamemap " + map)
-        elif server == "chaos":
-            conn5.send("gamemap " + map)
-        await context.send(f'```yaml\nMap changed to: {map}\nOn server: {server}\n```')
+    async def changemap(self, context, cserver: str = commands.Param(name="server", choices=server_choices), map: str = commands.Param(name="mapname")) -> None:
+        with open('servers.json', 'r') as f:
+            data = json.load(f)
+        for server in data['servers']:
+            if cserver in server['name']:
+                ip = server['ip']
+                port = server['port']
+                rcon = server['rcon']
+                pyrcon.Q2RConnection(ip, port, rcon).send('gamemap ' + map)
+                await context.send(f'```yaml\nMap changed to: {map}\nOn server: {cserver}\n```')
 
     @commands.slash_command(
         guild_ids=[GUILDID],
         name="lrcon",
-        description="Test of lrcon. See cmds use list",
+        description="To see cmds use listlrconcmds",
     )
     @checks.not_blacklisted()
     @checks.admin()
-    async def lrcon(self, context, *, server: str = commands.Param(choices={"pickup", "cw", "chaos", "list"}), cmd = True) -> None:
-        if server == "list":
-            result = conn3.send("listlrconcmds")
-            return await context.send('```yaml\n{}\n```'.format(result), ephemeral=True)
-        elif server == "pickup":
-            result = conn3.send(cmd)
-        elif server == "cw":
-            result = conn4.send(cmd)
-        elif server == "chaos":
-            result = conn5.send(cmd)
-        await context.send('```yaml\n{}\n```'.format(result), ephemeral=True)
+    async def lrcon(self, context, cserver: str = commands.Param(choices=server_choices), cmd: str = commands.Param(name='command')) -> None:
+        with open('servers.json', 'r') as f:
+            data = json.load(f)
+        for server in data['servers']:
+            if cserver in server['name']:
+                ip = server['ip']
+                port = server['port']
+                rcon = server['rcon']
+                result = pyrcon.Q2RConnection(ip, port, rcon).send(cmd)
+                await context.send('```yaml\n{}\n```'.format(result), ephemeral=True)
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -145,14 +98,16 @@ class Aq2(commands.Cog, name="AQ2-slash"):
     )
     @checks.not_blacklisted()
     @checks.admin()
-    async def reset(self, context, *, server: str = commands.Param(choices={"pickup", "cw", "chaos"})):
-        if server == "pickup":
-            conn3.send('recycle Reset server!')
-        elif server == "cw":
-            conn4.send('recycle Reset server!')
-        elif server == "chaos":
-            conn5.send('recycle Reset server!')
-        await context.send(f'`{server}-server reset by {context.author}!`')
+    async def reset(self, context, cserver: str = commands.Param(name="server", choices=server_choices)) -> None:
+        with open('servers.json', 'r') as f:
+            data = json.load(f)
+        for server in data['servers']:
+            if cserver in server['name']:
+                ip = server['ip']
+                port = server['port']
+                rcon = server['rcon']
+                pyrcon.Q2RConnection(ip, port, rcon).send(f'recycle Server reset by {context.author.display_name}')
+                await context.send(f'`{cserver}-server reset by {context.author.display_name}!`')
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -198,30 +153,23 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         description="Check server.",
     )
     @checks.not_blacklisted()
-    async def check(self, context, server: str = commands.Param(choices={"pickup", "cw", "chaos"})
-    ):
-        if server is None:
-            return await context.send("`Use one of the following: pickup, cw, chaos`")
-        try:
-            if server.lower()=='pickup':
-                qstat = pickup
-            elif server.lower()=='cw':
-                qstat = cw
-            elif server.lower()=='chaos':
-                qstat = chaos
-            scores = []
-            s = subprocess.check_output(qstat)
-            data = json.loads(s)
-            for te in data:
-                print()
-            for each in data[0]['players']:
-                scores.append("{:>6d} - {}".format(each['score'],each['name']))
-            scores = "\n".join(scores)
-            nl = '\n'
-            await context.send(f"```json{nl}{te['name']}{nl+nl}Map: {te['map']}{nl}Time: {te['rules']['maptime']}{nl+nl}Team1 vs Team2{nl}  {te['rules']['t1']}       {te['rules']['t2']}{nl+nl}Frags:   Players:{nl}{scores}```")
-        except KeyError as e:
-            print(e)
-            await context.send("`Use one of the following: pickup, cw, chaos`")
+    async def check(self, context, cserver: str = commands.Param(choices=server_choices)):
+        with open('servers.json', 'r') as f:
+            data = json.load(f)
+        for server in data['servers']:
+            if cserver in server['name']:
+                ip = server['ip']
+                port = server['port']
+                scores = []
+                s = subprocess.check_output([qs, '-q2s', ip + ':' + port, '-R', '-P', '-sort', 'F', '-json'])
+                sdata = json.loads(s)
+                for te in sdata:
+                    print()
+                for each in sdata[0]['players']:
+                    scores.append("{:>6d} - {}".format(each['score'],each['name']))
+                scores = "\n".join(scores)
+                nl = '\n'
+                await context.send(f"```json{nl}{te['name']}{nl+nl}Map: {te['map']}{nl}Time: {te['rules']['maptime']}{nl+nl}Team1 vs Team2{nl}  {te['rules']['t1']}       {te['rules']['t2']}{nl+nl}Frags:   Players:{nl}{scores}```")
 
 def setup(bot):
     bot.add_cog(Aq2(bot))

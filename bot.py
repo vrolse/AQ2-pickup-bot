@@ -24,7 +24,8 @@ if not os.path.isfile("qstat"):
 intents = disnake.Intents.default()
 
 #Add what needs to be loaded from config.json
-bot = Bot(command_prefix=config["prefix"], intents=intents)
+#bot = Bot(command_prefix=config["prefix"], intents=intents)
+bot = Bot(intents=intents)
 
 DISCORD_CHANNELID = int(config["CHANNEL_ID"])
 MVD2URL = config["MVD2URL"]
@@ -38,8 +39,6 @@ serverName4 = config["SRV_NAME4"]
 async def on_ready():
     print(f"Logged in as {bot.user.name}")
     print(f"disnake API version: {disnake.__version__}")
-    print(f"Python version: {platform.python_version()}")
-    print(f"Running on: {platform.system()} {platform.release()} ({os.name})")
     print("-------------------")
     status_task.start()
     pickup_over.start()
