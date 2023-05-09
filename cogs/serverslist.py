@@ -51,6 +51,7 @@ class Servers(commands.Cog, name="servers"):
             json.dump(data, f, indent=4)
         
         # Yass.. send success
+        self.bot.reload_extension("cogs.aq2-slash")
         await ctx.send(f"Server {name} ({ip}:{port}) has been added to the list. \N{SMILING FACE WITH HEART-SHAPED EYES}", ephemeral=True)
 
     @commands.slash_command(guild_ids=[GUILDID], name='removeserver', description='Remove a AQtion server from the list')
@@ -78,13 +79,14 @@ class Servers(commands.Cog, name="servers"):
     @commands.slash_command(guild_ids=[GUILDID], name='listservers', description='List all AQtion servers')
     @checks.not_blacklisted()
     @checks.admin()
-    async def list_servers(ctx):
+    async def list_servers(self, ctx):
         embed = Embed(title='AQtion Server List', color=0x00ff00)
         # Loop through the servers and add them to the message (embed)
         with open('servers.json', 'r') as f:
             data = json.load(f)
         for server in data['servers']:
             embed.add_field(name=server['name'], value=f"{server['ip']}:{server['port']} :: Admin:{server['admin']}")
+            self.bot.reload_extension("cogs.aq2-slash")
         
         await ctx.send(embed=embed, ephemeral=True)
 
