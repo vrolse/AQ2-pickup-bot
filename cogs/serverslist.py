@@ -49,9 +49,9 @@ class Servers(commands.Cog, name="servers"):
         # Save updated servers.json
         with open('servers.json', 'w') as f:
             json.dump(data, f, indent=4)
+            self.bot.reload_extension("cogs.aq2-slash")
         
         # Yass.. send success
-        self.bot.reload_extension("cogs.aq2-slash")
         await ctx.send(f"Server {name} ({ip}:{port}) has been added to the list. \N{SMILING FACE WITH HEART-SHAPED EYES}", ephemeral=True)
 
     @commands.slash_command(guild_ids=[GUILDID], name='removeserver', description='Remove a AQtion server from the list')
@@ -76,7 +76,7 @@ class Servers(commands.Cog, name="servers"):
         # Ohno.. send error :(
         await ctx.send(f"A server with the name {name} was not found.", ephemeral=True)
     
-    @commands.slash_command(guild_ids=[GUILDID], name='listservers', description='List all AQtion servers')
+    @commands.slash_command(self, guild_ids=[GUILDID], name='listservers', description='List all AQtion servers')
     @checks.not_blacklisted()
     @checks.admin()
     async def list_servers(ctx):
@@ -86,6 +86,7 @@ class Servers(commands.Cog, name="servers"):
             data = json.load(f)
         for server in data['servers']:
             embed.add_field(name=server['name'], value=f"{server['ip']}:{server['port']} :: Admin:{server['admin']}")
+            self.bot.reload_extension("cogs.aq2-slash")
         
         await ctx.send(embed=embed, ephemeral=True)
 
