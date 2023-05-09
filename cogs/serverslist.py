@@ -51,6 +51,7 @@ class Servers(commands.Cog, name="servers"):
             json.dump(data, f, indent=4)
         
         # Yass.. send success
+        self.bot.reload_extension("cogs.aq2-slash")
         await ctx.send(f"Server {name} ({ip}:{port}) has been added to the list. \N{SMILING FACE WITH HEART-SHAPED EYES}", ephemeral=True)
 
     @commands.slash_command(guild_ids=[GUILDID], name='removeserver', description='Remove a AQtion server from the list')
