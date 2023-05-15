@@ -5,9 +5,9 @@ This is a template to create your own discord bot in python.
 
 Version: 4.1
 """
+from disnake.ext import commands
 
-
-class UserBlacklisted(Exception):
+class UserBlacklisted(commands.CheckFailure):
     """
     Thrown when a user is attempting something, but is blacklisted.
     """
@@ -17,7 +17,7 @@ class UserBlacklisted(Exception):
         super().__init__(self.message)
 
 
-class UserNotOwner(Exception):
+class UserNotOwner(commands.CheckFailure):
     """
     Thrown when a user is attempting something, but is not an owner of the bot.
     """
@@ -27,7 +27,7 @@ class UserNotOwner(Exception):
         super().__init__(self.message)
 
 
-class UserNotAdmin(Exception):
+class UserNotAdmin(commands.CheckFailure):
     """
     Thrown when a user is attempting something, but is not an admin of the bot.
     """
