@@ -46,7 +46,6 @@ async def on_ready():
     print(f"disnake API version: {disnake.__version__}")
     print("-------------------")
     status_task.start()
-    status_task.start()
     pickup_over.start()
     cw_over.start()
     chaos_over.start()
