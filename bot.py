@@ -13,6 +13,7 @@ import sys
 import disnake
 import exceptions
 import datetime
+import asyncio
 from disnake import ApplicationCommandInteraction
 from disnake.ext import tasks, commands
 from disnake.ext.commands import Bot
