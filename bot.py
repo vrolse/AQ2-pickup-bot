@@ -8,6 +8,7 @@ Version: 4.0.1
 
 import json
 import os
+import re
 import random
 import sys
 import disnake
