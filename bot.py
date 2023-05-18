@@ -31,8 +31,7 @@ if not os.path.isfile("qstat"):
 intents = disnake.Intents.default()
 
 #Add what needs to be loaded from config.json
-#bot = Bot(command_prefix=config["prefix"], intents=intents)
-bot = Bot(intents=intents)
+bot = Bot(command_prefix=disnake.ext.commands.when_mentioned, intents=intents)
 date = datetime.datetime.now()
 DISCORD_CHANNELID = int(config["CHANNEL_ID"])
 MVD2URL = config["MVD2URL"]
@@ -230,7 +229,7 @@ async def on_command_completion(ctx):
     split = fullCommandName.split(" ")
     executedCommand = str(split[0])
     print(
-        f"Executed {executedCommand} command in {ctx.guild.name} (ID: {ctx.message.guild.id}) by {ctx.message.author} (ID: {ctx.message.author.id})")
+        f"{date:%Y-%m-%d %H:%M} -- Executed {executedCommand} command in {ctx.guild.name} (ID: {ctx.message.guild.id}) by {ctx.message.author} (ID: {ctx.message.author.id})")
 
 # The code in this event is executed every time a valid slash command catches an error
 @bot.event

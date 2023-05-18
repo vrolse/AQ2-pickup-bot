@@ -6,7 +6,11 @@ This is a template to create your own discord bot in python.
 Version: 4.0.1
 """
 
-import json, os, platform, sys, random, aiohttp, disnake
+import json
+import os
+import sys
+import requests
+import disnake
 from disnake import ApplicationCommandInteraction, Option, OptionType
 from disnake.ext import commands
 from disnake.ext.commands import Context
@@ -73,6 +77,16 @@ class General(commands.Cog, name="general"):
             color=0x9C84EF
         )
         await context.send(embed=embed, ephemeral=True)
+
+    @commands.slash_command(
+        guild_ids=[GUILDID],
+        name="chucky",
+        description="Get an awsome Chuck Norris quote"
+    )
+    async def chucky(self, interaction: ApplicationCommandInteraction) -> None:
+            response = requests.get("https://api.chucknorris.io/jokes/random")
+            joke = response.json()['value']
+            await interaction.send(joke)
     
 def setup(bot):
     bot.add_cog(General(bot))

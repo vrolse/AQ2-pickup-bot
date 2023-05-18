@@ -1,5 +1,9 @@
-import json, logging, sys, os #bcrypt
-from disnake import Embed
+import json
+import logging
+import sys
+import os 
+# import bcrypt
+from disnake import Embed, ApplicationCommandInteraction
 from disnake.ext import commands
 from helpers import checks
 
@@ -18,17 +22,21 @@ class Servers(commands.Cog, name="servers"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.slash_command(guild_ids=[GUILDID], name='addserver', description='Add a new AQtion server to the list')
+    @commands.slash_command(
+        guild_ids=[GUILDID],
+        name='addserver',
+        description='Add a new AQtion server to the list'
+        )
     @checks.not_blacklisted()
     @checks.admin()
-    async def add_server(self, ctx, name: str, ip: str, port: str, rcon: str, admin: str):
+    async def add_server(self, interaction: ApplicationCommandInteraction, name: str, ip: str, port: str, rcon: str, admin: str):
         # See if server with name already exists
         # Load the data from servers.json
         with open('servers.json', 'r') as f:
             data = json.load(f)
         for server in data['servers']:
             if server['name'] == name:
-                await ctx.send(f"A server with the name {name} already exists.", ephemeral=True)
+                await interaction.send(f"A server with the name {name} already exists.", ephemeral=True)
                 self.bot.reload_extension("cogs.aq2-slash")
                 return
         
@@ -52,34 +60,40 @@ class Servers(commands.Cog, name="servers"):
         
         # Yass.. send success
         self.bot.reload_extension("cogs.aq2-slash")
-        await ctx.send(f"Server {name} ({ip}:{port}) has been added to the list. \N{SMILING FACE WITH HEART-SHAPED EYES}", ephemeral=True)
+        await interaction.send(f"Server {name} ({ip}:{port}) has been added to the list. \N{SMILING FACE WITH HEART-SHAPED EYES}", ephemeral=True)
 
-    @commands.slash_command(guild_ids=[GUILDID], name='removeserver', description='Remove a AQtion server from the list')
+    @commands.slash_command(
+        guild_ids=[GUILDID], 
+        name='removeserver', 
+        description='Remove a AQtion server from the list'
+        )
     @checks.not_blacklisted()
     @checks.admin()
-    async def remove_server(self, ctx, name: str):
+    async def remove_server(self, interaction: ApplicationCommandInteraction, name: str):
         with open('servers.json', 'r') as f:
             data = json.load(f)
         # See if server with name exists
         for server in data['servers']:
             if server['name'] == name:
                 data['servers'].remove(server)
-                
                 # Save updated servers.json
                 with open('servers.json', 'w') as f:
                     json.dump(data, f, indent=4)
                 # Yass.. send success
-                await ctx.send(f"Server {name} has been removed from the list. \N{GHOST}" , ephemeral=True)
+                await interaction.send(f"Server {name} has been removed from the list. \N{GHOST}" , ephemeral=True)
                 self.bot.reload_extension("cogs.aq2-slash")
                 return
-        
         # Ohno.. send error :(
-        await ctx.send(f"A server with the name {name} was not found.", ephemeral=True)
+        await interaction.send(f"A server with the name {name} was not found.", ephemeral=True)
     
-    @commands.slash_command(guild_ids=[GUILDID], name='listservers', description='List all AQtion servers')
+    @commands.slash_command(
+        guild_ids=[GUILDID], 
+        name='listservers', 
+        description='List all AQtion servers'
+        )
     @checks.not_blacklisted()
     @checks.admin()
-    async def list_servers(self, ctx):
+    async def list_servers(self, interaction: ApplicationCommandInteraction):
         embed = Embed(title='AQtion Server List', color=0x00ff00)
         # Loop through the servers and add them to the message (embed)
         with open('servers.json', 'r') as f:
@@ -88,7 +102,7 @@ class Servers(commands.Cog, name="servers"):
             embed.add_field(name=server['name'], value=f"{server['ip']}:{server['port']} :: Admin:{server['admin']}")
             self.bot.reload_extension("cogs.aq2-slash")
         
-        await ctx.send(embed=embed, ephemeral=True)
+        await interaction.send(embed=embed, ephemeral=True)
 
 def setup(bot):
     bot.add_cog(Servers(bot))

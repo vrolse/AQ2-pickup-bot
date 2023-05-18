@@ -58,7 +58,7 @@ def admin() -> Callable[[T], T]:
         roles = roles[1:]
         matching_ids = [role.id for role in roles if role.id in role_ids]
         if matching_ids:
-            print("HAPPY! :):", matching_ids)
+            print("HAPPY! :)", matching_ids)
         else:
             print("NOT HAPPY! :(")
             raise UserNotAdmin
