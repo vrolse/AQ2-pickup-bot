@@ -5,7 +5,11 @@ This is a template to create your own discord bot in python.
 
 Version: 4.0.1
 """
-import json, logging, subprocess, os, sys
+import json
+import logging
+import subprocess
+import os
+import sys
 from disnake.ext.commands import Context
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Option, OptionType
@@ -54,25 +58,23 @@ class anyip(commands.Cog, name="anyip-slash"):
             scores = []
             s = subprocess.check_output(qstat)
             data = json.loads(s)
-            for te in data:
-                print()
             for each in data[0]['players']:
                 scores.append("{:>6d} - {}".format(each['score'],each['name']))
             scores = "\n".join(scores)
             nl = '\n'
-            if 'maptime' in te['rules']:
-                maptajm = te['rules']['maptime']
+            if 'maptime' in data[0]['rules']:
+                maptajm = data[0]['rules']['maptime']
             else:
                 maptajm = "0"
-            if 't1' in te['rules']:
-                t1 = te['rules']['t1']
+            if 't1' in data[0]['rules']:
+                t1 = data[0]['rules']['t1']
             else:
                 t1 = "N/A"
-            if 't2' in te['rules']:
-                t2 = te['rules']['t2']
+            if 't2' in data[0]['rules']:
+                t2 = data[0]['rules']['t2']
             else:
                 t2 = "N/A"
-            await interaction.send(f"```json{nl}{te['name']}{nl+nl}Map: {te['map']}{nl}Time: {maptajm}{nl+nl}Team1 vs Team2{nl}  {t1}       {t2}{nl+nl}Frags:   Players:{nl}{scores}```")
+            await interaction.send(f"```json{nl}{data[0]['name']}{nl+nl}Map: {data[0]['map']}{nl}Time: {maptajm}{nl+nl}Team1 vs Team2{nl}  {t1}       {t2}{nl+nl}Frags:   Players:{nl}{scores}```")
         except KeyError as e:
             await interaction.send("`Dang it! Invalid IP or not an AQ2-server 🤦‍`")
 

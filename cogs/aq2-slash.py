@@ -171,8 +171,6 @@ class Aq2(commands.Cog, name="AQ2-slash"):
                 s = subprocess.check_output([qs, '-q2s', ip + ':' + port, '-R', '-P', '-sort', 'F', '-json'])
                 sdata = json.loads(s)
                 scores = []
-                # for te in sdata:
-                #     print()
                 for each in sdata[0]['players']:
                     scores.append("{:>6d} - {}".format(each['score'],each['name']))
                 scores = "\n".join(scores)
