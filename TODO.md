@@ -4,5 +4,5 @@
 - [ ] Add more functions like creating polls.
 - [ ] Update the code to use newer template or redo it.
 - [ ] Add missing thumbnails
-    - [x]Rename to lowercase 
+- [x] Rename thumbnails to lowercase 
 - [ ] Add hash/salt to rcon in servers.json
