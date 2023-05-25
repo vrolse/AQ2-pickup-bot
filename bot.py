@@ -58,6 +58,78 @@ async def status_task():
     statuses = ["AQ2!", "Pickups!", "with M4!", "with SSG!", "with knives!", "with HC!", "with MP5!", "with grenades!", "with Shotgun!", "with Slippers!, AQtion!"]
     await bot.change_presence(activity=disnake.Game(random.choice(statuses)))
 
+""" Test new function to get match report from servers directly through q2admin
+# Find files so we will not spam all results if bot restarts
+def load_processed_filenames():
+    try:
+        with open('processed_files.txt', 'r') as file:
+            return set(file.read().splitlines())
+    except FileNotFoundError:
+        filenames = set()
+        folder_path = './servers'
+        for filename in os.listdir(folder_path):
+            if filename.endswith('.json'):
+                filenames.add(filename)
+        save_processed_filenames(filenames)
+        return filenames
+
+# Save new filenames to list
+def save_processed_filenames(filenames):
+    with open('processed_files.txt', 'w') as file:
+        file.write('\n'.join(filenames))
+
+@tasks.loop()
+async def pickup_over():
+    channel = bot.get_channel(DISCORD_CHANNELID)
+    folder_path = './servers'
+    previous_data = {}
+    processed_filenames = load_processed_filenames()
+
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.json'):
+            if filename in processed_filenames:
+                continue  # Skip already processed files
+            
+            file_path = os.path.join(folder_path, filename)
+            with open(file_path, 'r') as f:
+                file_data = f.read().strip()
+            
+            if not file_data:
+                continue  # Skip empty files
+
+            try:
+                data = json.loads(file_data)
+            except json.JSONDecodeError:
+                continue  # Skip files with invalid JSON
+            
+            name = data.get('name')
+            t1score = data.get('T1')
+            t2score = data.get('T2')
+            mapname = data.get('map')
+
+            embedVar = disnake.Embed(
+                title=':map:    {}    '.format(mapname),
+                description=MVD2URL,
+                color=0xE02B2B,
+            )
+            embedVar.set_footer(text=name)
+            thumbnail_path = './thumbnails/{}.jpg'.format(mapname)
+            if os.path.isfile(thumbnail_path):
+                file = disnake.File(thumbnail_path, filename='map.jpg')
+            else:
+                file = disnake.File('./thumbnails/map.jpg', filename='map.jpg')
+            embedVar.set_thumbnail(url='attachment://map.jpg')
+            embedVar.add_field(name='Team Uno', value=t1score)
+            embedVar.add_field(name='Team Dos', value=t2score)
+
+            await channel.send(file=file, embed=embedVar)
+
+            previous_data[filename] = data
+            processed_filenames.add(filename)
+
+    save_processed_filenames(processed_filenames)
+    await asyncio.sleep(10) """
+    
 @tasks.loop()
 async def pickup_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
