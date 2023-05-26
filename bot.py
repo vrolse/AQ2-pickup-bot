@@ -35,10 +35,10 @@ bot = Bot(command_prefix=disnake.ext.commands.when_mentioned, intents=intents)
 date = datetime.datetime.now()
 DISCORD_CHANNELID = int(config["CHANNEL_ID"])
 MVD2URL = config["MVD2URL"]
-serverName = config["SRV_NAME"]
-serverName2 = config["SRV_NAME2"]
-serverName3 = config["SRV_NAME3"]
-serverName4 = config["SRV_NAME4"]
+# serverName = config["SRV_NAME"]
+# serverName2 = config["SRV_NAME2"]
+# serverName3 = config["SRV_NAME3"]
+# serverName4 = config["SRV_NAME4"]
 
 # The code in this even is executed when the bot is ready
 @bot.event
@@ -47,10 +47,11 @@ async def on_ready():
     print(f"disnake API version: {disnake.__version__}")
     print("-------------------")
     status_task.start()
-    pickup_over.start()
-    cw_over.start()
-    chaos_over.start()
-    #pickup_interp_over.start()
+    match_over.start()
+    # pickup_over.start()
+    # cw_over.start()
+    # chaos_over.start()
+    # pickup_interp_over.start()
 
 # Setup the game status task of the bot
 @tasks.loop(minutes=20.0)
@@ -58,7 +59,8 @@ async def status_task():
     statuses = ["AQ2!", "Pickups!", "with M4!", "with SSG!", "with knives!", "with HC!", "with MP5!", "with grenades!", "with Shotgun!", "with Slippers!, AQtion!"]
     await bot.change_presence(activity=disnake.Game(random.choice(statuses)))
 
-""" Test new function to get match report from servers directly through q2admin
+## Test new function to get match report from servers directly through q2admin ##
+
 # Find files so we will not spam all results if bot restarts
 def load_processed_filenames():
     try:
@@ -79,7 +81,7 @@ def save_processed_filenames(filenames):
         file.write('\n'.join(filenames))
 
 @tasks.loop()
-async def pickup_over():
+async def match_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
     folder_path = './servers'
     previous_data = {}
@@ -128,8 +130,9 @@ async def pickup_over():
             processed_filenames.add(filename)
 
     save_processed_filenames(processed_filenames)
-    await asyncio.sleep(10) """
-    
+    await asyncio.sleep(10)
+
+""" The old local way    
 @tasks.loop()
 async def pickup_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
@@ -264,7 +267,8 @@ async def cw_over():
 #                 embedVar.add_field(name='Team Dos', value=t2score)
 #                 prev_time = t
 #                 await channel.send(file=file, embed=embedVar)
-#         await asyncio.sleep(10)
+#         await asyncio.sleep(10) 
+"""
 
 # Removes the default help command of discord.py to be able to create our custom help command.
 bot.remove_command("help")
