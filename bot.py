@@ -61,82 +61,74 @@ async def status_task():
     await bot.change_presence(activity=disnake.Game(random.choice(statuses)))
 
 ## Test new function to get match report from servers directly through q2admin ##
-
-# Get the modified timestamps of JSON files
-def get_file_timestamps(folder_path):
-    file_timestamps = {}
-    for filename in os.listdir(folder_path):
-        if filename.endswith('.json'):
-            file_path = os.path.join(folder_path, filename)
-            modified_timestamp = os.path.getmtime(file_path)
-            file_timestamps[filename] = modified_timestamp
-    return file_timestamps
-
-# Load processed data
-def load_processed_data():
+# Load processed filenames and timestamps
+def load_processed_files():
     try:
         with open('processed_files.json', 'r') as file:
-            processed_data = json.load(file)
-            return processed_data
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {'filenames': [], 'last_processed_timestamp': 0}
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
 
-# Save processed data
-def save_processed_data(processed_data):
+# Save processed filenames and timestamps
+def save_processed_files(processed_files):
     with open('processed_files.json', 'w') as file:
-        json.dump(processed_data, file)
+        json.dump(processed_files, file)
 
-@tasks.loop()
+@tasks.loop()  # seconds=10
 async def match_over():
     channel = bot.get_channel(DISCORD_CHANNELID)
     folder_path = './servers'
-    processed_data = load_processed_data()
+    processed_files = load_processed_files()
 
-    file_timestamps = get_file_timestamps(folder_path)
-    updated_files = [filename for filename, timestamp in file_timestamps.items() if timestamp > processed_data['last_processed_timestamp']]
+    for filename in os.listdir(folder_path):
+        if filename.endswith('.json'):
+            file_path = os.path.join(folder_path, filename)
 
-    for filename in updated_files:
-        if filename in processed_data['filenames']:
-            continue  # Skip already processed files
+            # Get modified timestamp of file
+            modified_timestamp = os.path.getmtime(file_path)
 
-        file_path = os.path.join(folder_path, filename)
-        with open(file_path, 'r') as f:
-            file_data = f.read().strip()
+            if filename in processed_files:
+                # Compare modified timestamps
+                if modified_timestamp == processed_files[filename]:
+                    continue  # Skip if file has not been modified
 
-        if not file_data:
-            continue  # Skip empty files
+            with open(file_path, 'r') as f:
+                file_data = f.read().strip()
+            
+            if not file_data:
+                continue  # Skip empty files
 
-        try:
-            data = json.loads(file_data)
-        except json.JSONDecodeError:
-            continue  # Skip files with invalid JSON
+            try:
+                data = json.loads(file_data)
+            except json.JSONDecodeError:
+                continue  # Skip files with invalid JSON
+            
+            name = data.get('name')
+            t1score = data.get('T1')
+            t2score = data.get('T2')
+            mapname = data.get('map')
 
-        name = data.get('name')
-        t1score = data.get('T1')
-        t2score = data.get('T2')
-        mapname = data.get('map')
+            embedVar = disnake.Embed(
+                title=':map:    {}    '.format(mapname),
+                description=MVD2URL,
+                color=0xE02B2B,
+            )
+            embedVar.set_footer(text=name)
+            thumbnail_path = './thumbnails/{}.jpg'.format(mapname)
+            if os.path.isfile(thumbnail_path):
+                file = disnake.File(thumbnail_path, filename='map.jpg')
+            else:
+                file = disnake.File('./thumbnails/map.jpg', filename='map.jpg')
+            embedVar.set_thumbnail(url='attachment://map.jpg')
+            embedVar.add_field(name='Team Uno', value=t1score)
+            embedVar.add_field(name='Team Dos', value=t2score)
 
-        embedVar = disnake.Embed(
-            title=':map:    {}    '.format(mapname),
-            description=MVD2URL,
-            color=0xE02B2B,
-        )
-        embedVar.set_footer(text=name)
-        thumbnail_path = './thumbnails/{}.jpg'.format(mapname)
-        if os.path.isfile(thumbnail_path):
-            file = disnake.File(thumbnail_path, filename='map.jpg')
-        else:
-            file = disnake.File('./thumbnails/map.jpg', filename='map.jpg')
-        embedVar.set_thumbnail(url='attachment://map.jpg')
-        embedVar.add_field(name='Team Uno', value=t1score)
-        embedVar.add_field(name='Team Dos', value=t2score)
+            await channel.send(file=file, embed=embedVar)
 
-        await channel.send(file=file, embed=embedVar)
+            # Update timestamp
+            processed_files[filename] = modified_timestamp
 
-        processed_data['filenames'].append(filename)
-
-    processed_data['last_processed_timestamp'] = time.time()
-    save_processed_data(processed_data)
+    save_processed_files(processed_files)
     await asyncio.sleep(10)
 
 """ The old local way    
