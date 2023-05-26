@@ -62,34 +62,28 @@ async def status_task():
 
 ## Test new function to get match report from servers directly through q2admin ##
 
-def get_file_timestamps():
-    folder_path = './servers'
+# Get the modified timestamps of JSON files
+def get_file_timestamps(folder_path):
     file_timestamps = {}
     for filename in os.listdir(folder_path):
         if filename.endswith('.json'):
             file_path = os.path.join(folder_path, filename)
-            modified_time = os.path.getmtime(file_path)
-            file_timestamps[filename] = modified_time
+            modified_timestamp = os.path.getmtime(file_path)
+            file_timestamps[filename] = modified_timestamp
     return file_timestamps
 
-def get_updated_files(file_timestamps, last_processed_timestamp):
-    updated_files = []
-    for filename, modified_time in file_timestamps.items():
-        if modified_time > last_processed_timestamp:
-            updated_files.append(filename)
-    return updated_files
-
+# Load processed data
 def load_processed_data():
     try:
-        with open('processed_files.txt', 'r') as file:
+        with open('processed_files.json', 'r') as file:
             processed_data = json.load(file)
+            return processed_data
     except (FileNotFoundError, json.JSONDecodeError):
-        processed_data = {'filenames': set(), 'last_processed_timestamp': 0}
-        save_processed_data(processed_data)
-    return processed_data
+        return {'filenames': [], 'last_processed_timestamp': 0}
 
+# Save processed data
 def save_processed_data(processed_data):
-    with open('processed_files.txt', 'w') as file:
+    with open('processed_files.json', 'w') as file:
         json.dump(processed_data, file)
 
 @tasks.loop()
@@ -98,10 +92,13 @@ async def match_over():
     folder_path = './servers'
     processed_data = load_processed_data()
 
-    file_timestamps = get_file_timestamps()
-    updated_files = get_updated_files(file_timestamps, processed_data['last_processed_timestamp'])
+    file_timestamps = get_file_timestamps(folder_path)
+    updated_files = [filename for filename, timestamp in file_timestamps.items() if timestamp > processed_data['last_processed_timestamp']]
 
     for filename in updated_files:
+        if filename in processed_data['filenames']:
+            continue  # Skip already processed files
+
         file_path = os.path.join(folder_path, filename)
         with open(file_path, 'r') as f:
             file_data = f.read().strip()
@@ -136,11 +133,9 @@ async def match_over():
 
         await channel.send(file=file, embed=embedVar)
 
-        processed_data['filenames'].add(filename)
+        processed_data['filenames'].append(filename)
 
-    last_processed_timestamp = time.time()
-    processed_data['last_processed_timestamp'] = last_processed_timestamp
-
+    processed_data['last_processed_timestamp'] = time.time()
     save_processed_data(processed_data)
     await asyncio.sleep(10)
 
