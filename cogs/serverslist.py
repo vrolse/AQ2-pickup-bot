@@ -65,7 +65,7 @@ class Servers(commands.Cog, name="servers"):
     @commands.slash_command(
         guild_ids=[GUILDID], 
         name='removeserver', 
-        description='Remove a AQtion server from the list'
+        description='Remove an AQtion server from the list'
         )
     @checks.not_blacklisted()
     @checks.admin()
@@ -98,10 +98,16 @@ class Servers(commands.Cog, name="servers"):
         # Loop through the servers and add them to the message (embed)
         with open('servers.json', 'r') as f:
             data = json.load(f)
-        for server in data['servers']:
-            embed.add_field(name=server['name'], value=f"{server['ip']}:{server['port']} :: Admin:{server['admin']}")
-            self.bot.reload_extension("cogs.aq2-slash")
         
+        for server in data['servers']:
+                server_name = server['name']
+                server_ip = server['ip']
+                server_port = server['port']
+                server_admin = server['admin']
+
+                server_info = f"IP: {server_ip}:{server_port}\nAdmin: {server_admin}"
+                embed.add_field(name=server_name, value=server_info, inline=False)
+
         await interaction.send(embed=embed, ephemeral=True)
 
 def setup(bot):

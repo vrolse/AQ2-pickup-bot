@@ -83,6 +83,7 @@ class General(commands.Cog, name="general"):
         name="chucky",
         description="Get an awsome Chuck Norris quote"
     )
+    @checks.not_blacklisted()
     async def chucky(self, interaction: ApplicationCommandInteraction) -> None:
             response = requests.get("https://api.chucknorris.io/jokes/random")
             joke = response.json()['value']
