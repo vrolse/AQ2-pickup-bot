@@ -126,6 +126,7 @@ class voting(commands.Cog, name="voting"):
 
         # Send the voting result embed
         await ctx.send(embed=result_embed)
+        await message.delete()
 
 def setup(bot):
     bot.add_cog(voting(bot))
