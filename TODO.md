@@ -5,6 +5,7 @@
 - [ ] Add more functions like creating polls.
   > Poll for server voting ✔
 - [ ] Update the code to use newer template or redo it.
-- [ ] Add missing thumbnails
+- [x] Add missing thumbnails
+  > Might be some more missing, fixed [ ] 
 - [x] Rename thumbnails to lowercase 
 - [ ] Add hash/salt to rcon in servers.json
