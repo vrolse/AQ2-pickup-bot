@@ -29,7 +29,7 @@ class Servers(commands.Cog, name="servers"):
         )
     @checks.not_blacklisted()
     @checks.admin()
-    async def add_server(self, interaction: ApplicationCommandInteraction, name: str, ip: str, port: str, rcon: str, admin: str):
+    async def add_server(self, interaction: ApplicationCommandInteraction, name: str, ip: str, port: str, rcon: str, admin: str, gametype: str = commands.Param(name="gametype", choices=["pickup", "chaos"])):
         # See if server with name already exists
         # Load the data from servers.json
         with open('servers.json', 'r') as f:
@@ -49,7 +49,8 @@ class Servers(commands.Cog, name="servers"):
             'ip': ip,
             'port': port,
             'rcon': rcon,
-            'admin': admin
+            'admin': admin,
+            'type': gametype
             #'rcon': rcon_hash
         }
         data['servers'].append(new_server)

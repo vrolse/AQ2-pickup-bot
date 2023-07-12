@@ -5,7 +5,12 @@ This is a template to create your own discord bot in python.
 
 Version: 4.0.1
 """
-import json, os, disnake, sys, asyncio, random
+import json
+import os
+import disnake
+import sys
+import asyncio
+import random
 from disnake import ApplicationCommandInteraction
 from disnake.ext import commands
 from helpers import checks
@@ -17,44 +22,49 @@ else:
     with open("config.json") as file:
         config = json.load(file)
 
-#Add what needs to be loaded from config.json
+# Add what needs to be loaded from config.json
 GUILDID = int(config["GUILD_ID"])
 
 # Here we name the cog and create a new class for the cog.
-class voting(commands.Cog, name="voting"):
+class Voting(commands.Cog, name="voting"):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.slash_command(
-        guild_ids=[GUILDID], 
-        name='voting', 
-        description='Start a server voting poll'
+        guild_ids=[GUILDID],
+        name='voteserver',
+        description='Start a server voting poll for a specific type (pickup/chaos)'
     )
     @checks.not_blacklisted()
-    async def voting(ctx: ApplicationCommandInteraction):
-        # Send an initial response indicating the command has been received
+    async def voteserver(ctx: ApplicationCommandInteraction, gametype: str = commands.Param(name="gametype", choices=["pickup", "chaos"])):
+        with open('servers.json', 'r') as f:
+            data = json.load(f)
         await ctx.response.send_message('Processing the voting poll...')
 
-        # Read the server data from the JSON file
-        with open('servers.json', 'r') as f:
-            server_data = json.load(f)
+        # Filter the servers based on the specified option
+        filtered_servers = [server for server in data['servers'] if server.get('type', '').lower() == gametype.lower()]
+
+        if not filtered_servers:
+            await ctx.send(f"No servers found for the type: {gametype}", ephemeral=True)
+            return
 
         # Create an embed to display the server options
-        embed = disnake.Embed(title='Server Voting Poll', description='Vote for your favorite server!')
+        embed = disnake.Embed(title=f'Server Voting Poll - {gametype.capitalize()}', description='Vote for your favorite server of this type!')
 
         # Add fields for each server option
-        for index, server in enumerate(server_data['servers'], 1):
+        for index, server in enumerate(filtered_servers):
             name = server['name']
             ip = server['ip']
             port = server['port']
-            embed.add_field(name=f'Server {index}', value=f'Name: {name}\nIP: {ip}:{port}', inline=False)
+            emoji_number = chr(ord('0') + index + 1) + '\u20e3'
+            embed.add_field(name=f'{emoji_number} {name}', value=f'IP: {ip}:{port}', inline=False)
 
         # Send the embed to the channel
         message = await ctx.channel.send(embed=embed)
 
         # Add number reactions for each server option
-        for index in range(1, len(server_data['servers']) + 1):
-            reaction = str(index) + '\u20e3'  # Append '\u20e3' to represent the number as a Unicode emoji
+        for index in range(1, len(filtered_servers) + 1):
+            reaction = str(index) + '\u20e3'
             await message.add_reaction(reaction)
 
         # Define a check function for the reaction event
@@ -62,34 +72,32 @@ class voting(commands.Cog, name="voting"):
             return (
                 user.id != ctx.bot.user.id and
                 reaction.message.id == message.id and
-                str(reaction.emoji) in [str(i) + '\u20e3' for i in range(1, len(server_data['servers']) + 1)]
+                str(reaction.emoji) in [str(i) + '\u20e3' for i in range(1, len(filtered_servers) + 1)]
             )
 
         # Initialize a dictionary to keep track of votes for each server
-        vote_count = {str(i): 0 for i in range(1, len(server_data['servers']) + 1)}
+        vote_count = {str(i): 0 for i in range(1, len(filtered_servers) + 1)}
 
-        # Initialize a set to keep track of users who have voted
-        voted_users = set()
+        # Initialize a dictionary to keep track of user's vote
+        user_votes = {}
 
         try:
             # Wait for users to react to the message
-            end_time = ctx.bot.loop.time() + 20.0  # Set the end time for the voting poll (30 seconds)
+            end_time = ctx.bot.loop.time() + 60.0  # Set the end time for the voting poll (e.g 60 seconds)
             while ctx.bot.loop.time() < end_time:
                 reaction, user = await ctx.bot.wait_for('reaction_add', timeout=end_time - ctx.bot.loop.time(), check=check)
 
                 # Check if the user has already voted
-                if user.id in voted_users:
-                    continue  # Ignore the vote if the user has already voted
+                if user.id in user_votes:
+                    previous_vote = user_votes[user.id]
+                    if previous_vote == reaction.emoji:
+                        continue
+                    
+                    vote_count[str(previous_vote[:-1])] -= 1
 
-                voted_users.add(user.id)  # Add the user to the set of voted users
+                selected_option = int(reaction.emoji[:-1])
 
-                selected_option = int(reaction.emoji[:-1])  # Strip the last character ('\u20e3') from the emoji string
-
-                # Reduce the vote count for the previously voted server (if any)
-                for option, votes in vote_count.items():
-                    if user.id == votes:
-                        vote_count[option] -= 1
-                        break
+                user_votes[user.id] = reaction.emoji
 
                 vote_count[str(selected_option)] += 1
 
@@ -104,17 +112,17 @@ class voting(commands.Cog, name="voting"):
         max_votes = max(vote_count.values())
 
         # Get the servers with the maximum votes
-        winning_servers = [index for index, votes in vote_count.items() if votes == max_votes]
+        winning_servers = [option for option, votes in vote_count.items() if votes == max_votes]
 
         if len(winning_servers) == 1:
             # Only one server has the maximum votes
             winning_server_index = int(winning_servers[0]) - 1
         else:
             # Multiple servers have the maximum votes, randomly select one
-            winning_server_index = random.choice([int(server) - 1 for server in winning_servers])
+            winning_server_index = random.choice([int(option) - 1 for option in winning_servers])
 
         # Get the winning server details
-        winning_server = server_data['servers'][winning_server_index]
+        winning_server = filtered_servers[winning_server_index]
 
         # Remove the reactions from the message
         await message.clear_reactions()
@@ -129,4 +137,4 @@ class voting(commands.Cog, name="voting"):
         await message.delete()
 
 def setup(bot):
-    bot.add_cog(voting(bot))
+    bot.add_cog(Voting(bot))
