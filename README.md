@@ -16,7 +16,7 @@ Also many thanks to FragBait @ [aq2world](https://discord.aq2world.com) for the 
 * [Qstat](https://github.com/Unity-Technologies/qstat/)
 * [pyrcon](https://github.com/texnofobix/pyrcon/)
 * [q2admin with lua](https://github.com/actionquake/q2admin/tree/aqtion)
-* lastmatch.lua to use with q2admin to get info from '!last and/or /last' command with the bot. Path needs to be edited.
+* lastmatch.lua to use with q2admin to get info from '!last' command in the game. Path needs to be edited.
 * sendtoAPI.lua to use with q2admin, this will allow any server to send map result through the bot. Need to change the API address to make it work. 
 * and all imports (might be some that is not needed that I have missed to remove..)
 
