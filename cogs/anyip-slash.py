@@ -10,6 +10,7 @@ import logging
 import subprocess
 import os
 import sys
+from tabulate import tabulate
 from disnake.ext.commands import Context
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Option, OptionType
@@ -55,26 +56,30 @@ class anyip(commands.Cog, name="anyip-slash"):
         try:
             qstat = [qs, '-q2s', '-R', '-P', '-sort', 'F', '-json']
             qstat.insert(2, '{}'.format(ip))
-            scores = []
             s = subprocess.check_output(qstat)
             data = json.loads(s)
-            for each in data[0]['players']:
-                scores.append("{:>6d} - {}".format(each['score'],each['name']))
-            scores = "\n".join(scores)
-            nl = '\n'
+            player_headers = ['Player', 'Score', 'Ping']
+            player_data = []
+            team_data = []
+
+            if 't1' in data[0]['rules'] and 't2' in data[0]['rules']:
+                team_data.append({'Team uno': data[0]['rules']['t1'], 'Team dos': data[0]['rules']['t2']})
+            else:
+                team_data.append({'Team 1': 'N/A', 'Team 2': 'N/A'})
+        
+            for player in data[0]['players']:
+                player_data.append([player['name'], player['score'], player['ping']])
+           
             if 'maptime' in data[0]['rules']:
-                maptajm = data[0]['rules']['maptime']
+                maptime = data[0]['rules']['maptime']
             else:
-                maptajm = "0"
-            if 't1' in data[0]['rules']:
-                t1 = data[0]['rules']['t1']
-            else:
-                t1 = "N/A"
-            if 't2' in data[0]['rules']:
-                t2 = data[0]['rules']['t2']
-            else:
-                t2 = "N/A"
-            await interaction.send(f"```json{nl}{data[0]['name']}{nl+nl}Map: {data[0]['map']}{nl}Time: {maptajm}{nl+nl}Team1 vs Team2{nl}  {t1}       {t2}{nl+nl}Frags:   Players:{nl}{scores}```")
+                maptime = "0"
+            
+            map = data[0]['map']
+            teamscore = tabulate(team_data, headers='keys', tablefmt='rounded_outline', numalign='center')
+            players = tabulate(player_data, headers=player_headers, tablefmt='simple', numalign='center')
+
+            await interaction.send(f"```json\n{data[0]['name']}\n\nMap: {map}\nTime: {maptime}\n\n{teamscore}\n\n{players}```")
         except KeyError as e:
             await interaction.send("`Dang it! Invalid IP or not an AQ2-server 🤦‍`")
 

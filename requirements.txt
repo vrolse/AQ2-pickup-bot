@@ -2,3 +2,4 @@ aiohttp
 disnake
 requests
 git+https://github.com/texnofobix/pyrcon.git#python37
+tabulate
