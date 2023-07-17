@@ -100,6 +100,11 @@ async def match_over():
             t2score = data.get('T2')
             mapname = data.get('map')
 
+            # Get player data and scores from the JSON
+            players = data.get('players', [])
+            player_stats = {player['name']: player['score'] for player in players}
+
+
             embedVar = disnake.Embed(
                 title=':map:    {}    '.format(mapname),
                 description=MVD2URL,
@@ -112,8 +117,17 @@ async def match_over():
             else:
                 file = disnake.File('./thumbnails/map.jpg', filename='map.jpg')
             embedVar.set_thumbnail(url='attachment://map.jpg')
-            embedVar.add_field(name='Team Uno', value=t1score)
+            embedVar.add_field(name='Team Uno', value=t1score, inline=True)
             embedVar.add_field(name='Team Dos', value=t2score)
+
+            if player_stats:
+                table_str = f"```\n{'Player':<15} {'Score':^7}\n{'-'*15} {'-'*7}"
+                for player, score in player_stats.items():
+                    table_str += f"\n{player:<15} {score:^7}"
+                table_str += "```"
+                embedVar.add_field(name="\u200b", value=table_str, inline=False)
+            else:
+                embedVar.add_field(name="\u200b", value="No player data available.", inline=False)
 
             await channel.send(file=file, embed=embedVar)
 
