@@ -20,8 +20,10 @@ function LogMessage(msg)
         -- Get player data
         local playerData = {}
         for i, plr in pairs(ex.players) do
-            local frags = ex.ClientStats(i, STAT_FRAGS)
-            table.insert(playerData, { name = plr.name, score = frags })
+            if plr.name ~= "[MVDSPEC]" then
+                local frags = ex.ClientStats(i, STAT_FRAGS)
+                table.insert(playerData, { name = plr.name, score = frags })
+            end
         end
 
         -- Function to convert a Lua value to its JSON representation
