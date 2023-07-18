@@ -24,6 +24,7 @@ function LogMessage(msg)
             table.insert(playerData, { name = plr.name, score = frags })
         end
 
+
         -- Function to convert a Lua value to its JSON representation
         local function jsonEncode(value)
             if type(value) == "string" then
