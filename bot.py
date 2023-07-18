@@ -102,8 +102,10 @@ async def match_over():
 
             # Get player data and scores from the JSON
             players = data.get('players', [])
-            player_stats = {player['name']: player['score'] for player in players}
-
+            # Filter out "[MVDSPEC]"
+            players = [player for player in players if player['name'] != '[MVDSPEC]']
+            # Sort players based on their score (descending order)
+            sorted_players = sorted(players, key=lambda x: x['score'], reverse=True)
 
             embedVar = disnake.Embed(
                 title=':map:    {}    '.format(mapname),
@@ -117,13 +119,13 @@ async def match_over():
             else:
                 file = disnake.File('./thumbnails/map.jpg', filename='map.jpg')
             embedVar.set_thumbnail(url='attachment://map.jpg')
-            embedVar.add_field(name='Team Uno', value=t1score, inline=True)
+            embedVar.add_field(name='Team Uno', value=t1score)
             embedVar.add_field(name='Team Dos', value=t2score)
 
-            if player_stats:
+            if sorted_players:
                 table_str = f"```\n{'Player':<15} {'Score':^7}\n{'-'*15} {'-'*7}"
-                for player, score in player_stats.items():
-                    table_str += f"\n{player:<15} {score:^7}"
+                for player in sorted_players:
+                    table_str += f"\n{player['name']:<15} {player['score']:^7}"
                 table_str += "```"
                 embedVar.add_field(name="\u200b", value=table_str, inline=False)
             else:
