@@ -6,17 +6,13 @@ This is a template to create your own discord bot in python.
 Version: 4.0.1
 """
 import json
-import logging
 import subprocess
 import os
 import sys
 from tabulate import tabulate
-from disnake.ext.commands import Context
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction, Option, OptionType
 from helpers import checks
-
-logging.basicConfig(level=logging.INFO)
 
 # Only if you want to use variables that are in the config.json file.
 if not os.path.isfile("config.json"):

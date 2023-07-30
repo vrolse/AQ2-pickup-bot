@@ -8,13 +8,11 @@ Version: 4.0.1
 
 import json
 import os
-import re
 import random
 import sys
 import disnake
 import exceptions
 import datetime
-import time
 import asyncio
 from disnake import ApplicationCommandInteraction
 from disnake.ext import tasks, commands
@@ -196,24 +194,6 @@ async def on_slash_command_error(interaction: ApplicationCommandInteraction, err
         )
         print("A blacklisted user tried to execute a command.")
         return await interaction.send(embed=embed, ephemeral=True)
-        
-    elif isinstance(error, exceptions.UserBlacklisted):
-        embed = disnake.Embed(
-            title="Error!",
-            description="You are blacklisted from using the bot.",
-            color=0xE02B2B
-        )
-        print("A blacklisted user tried to execute a command.")
-        return await interaction.send(embed=embed, ephemeral=True)
-
-    elif isinstance(error, exceptions.UserBlacklisted):
-        embed = disnake.Embed(
-            title="Error!",
-            description="You don't have the correct role to execute this command!",
-            color=0xE02B2B
-        )
-        print("Someone that is blacklisted tried to execute a command.")
-        return await interaction.send(embed=embed, ephemeral=True)
     
     elif isinstance(error, commands.errors.MissingPermissions):
         embed = disnake.Embed(
@@ -221,7 +201,7 @@ async def on_slash_command_error(interaction: ApplicationCommandInteraction, err
             description="You are missing the permission(s) to execute this command!",
             color=0xE02B2B
         )
-        print("A blacklisted user tried to execute a command.")
+        print("An user without permissions tried to execute a command.")
         return await interaction.send(embed=embed, ephemeral=True)
     
     elif isinstance(error, commands.errors.MissingRole):

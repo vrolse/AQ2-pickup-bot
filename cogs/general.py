@@ -11,7 +11,7 @@ import os
 import sys
 import requests
 import disnake
-from disnake import ApplicationCommandInteraction, Option, OptionType
+from disnake import ApplicationCommandInteraction
 from disnake.ext import commands
 from disnake.ext.commands import Context
 

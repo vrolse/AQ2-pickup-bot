@@ -6,7 +6,6 @@ This is a template to create your own discord bot in python.
 Version: 4.0.1
 """
 import json
-import logging
 import pyrcon
 import re
 import subprocess
@@ -31,8 +30,6 @@ with open('servers.json', 'r') as f:
     server_choices = []
     for server in data['servers']:
         server_choices.append(server['name'])
-
-logging.basicConfig(level=logging.INFO)
 
 #Add what needs to be loaded from config.json
 GUILDID = int(config["GUILD_ID"])
