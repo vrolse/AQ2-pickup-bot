@@ -1,5 +1,9 @@
--- vrol's attempt on lua-scriptning.. 
--- Test to send map result to AQ2-pickup bot "API"
+-- vrol's attempt on lua-scripting..
+--[[
+
+v1.0 Send map result to AQ2-pickup bot "API"
+
+]]--
 
 local APIaddr = "http://test.server.api:1234/" -- change this
 local team1 = nil
