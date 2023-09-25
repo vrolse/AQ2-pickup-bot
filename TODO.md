@@ -9,3 +9,5 @@
   > Might be some more missing, fixed [ ] 
 - [x] Rename thumbnails to lowercase 
 - [ ] Add hash/salt to rcon in servers.json
+
+- [ ] Create dashboard for the bot (in my dreams anyways 😅)
