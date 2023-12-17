@@ -8,7 +8,7 @@ Here is a work in progress discordbot written in python to get info from aq2-tng
 Many thanks to [TgT](https://github.com/m4son/) for help with the code and for the time to answer many of my questions so that things actually started to work. 😄
 This is my first attempt to code anything so take it for what it is! Everything might not work 100% 😅
 
-Also many thanks to FragBait @ [aq2world](https://discord.aq2world.com) for the thumbnails!
+Also many thanks to FragBait @ [aq2world](https://discord.aq2world.com) for many of the thumbnails!
 
 ## Requirements
 
@@ -28,4 +28,4 @@ Feel free to manipulate this code as much as you want and for sure make it bette
 Also big thanks to [kkrypt0nn](https://github.com/kkrypt0nn/), [texnofobix](https://github.com/texnofobix/) and [Unity-Technologies](https://github.com/Unity-Technologies/) for the great work with the stuff I use and need to get this small project working.
 
 ## License
-What? or yeah.. read the licences from qstat and kkrypt0nn's discordbot-template to see that all is good. Probably I need to make some updates here also so it complies.
+What? or yeah.. read the licenses from qstat and kkrypt0nn's discordbot-template to see that all is good. Probably I need to make some updates here also so it complies.
