@@ -37,7 +37,7 @@ function LogMessage(msg)
     if matchend ~= nil then
         team1 = gi.cvar("t1", '').string
         team2 = gi.cvar("t2", '').string
-        map = gi.cvar("mapname", '').string
+        map = string.lower(gi.cvar("mapname", '').string)
         hostname = gi.cvar("hostname", "").string
         local name = string.gsub(hostname, "%s+", "")
         local fname = string.gsub(name, "[^%w_]", "")
