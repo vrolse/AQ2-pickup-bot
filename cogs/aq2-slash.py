@@ -130,7 +130,7 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             file_path = '../matchlogs/chaos.txt'
         with open(file_path, "r") as f:
             line2 = f.readlines()
-        scores = re.match("(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
+        scores = re.match(r"(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
         if scores:
             date = scores.group(1)
             t1score = scores.group(2)
