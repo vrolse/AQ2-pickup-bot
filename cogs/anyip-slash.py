@@ -51,7 +51,7 @@ class anyip(commands.Cog, name="anyip-slash"):
             return await interaction.send("`Shiieeeet.. did you forget the IP?!`")
         try:
             qstat = [qs, '-q2s', '-R', '-P', '-sort', 'F', '-json']
-            qstat.insert(2, '{}'.format(ip))
+            qstat.insert(2, f'{ip}')
             s = subprocess.check_output(qstat)
             data = json.loads(s)
             player_headers = ['Player', 'Score', 'Ping']

@@ -26,23 +26,29 @@ class Servers(commands.Cog, name="servers"):
         guild_ids=[GUILDID],
         name='addserver',
         description='Add a new AQtion server to the list'
-        )
+    )
     @checks.not_blacklisted()
     @checks.admin()
     async def add_server(self, interaction: ApplicationCommandInteraction, name: str, ip: str, port: str, rcon: str, admin: str, gametype: str = commands.Param(name="gametype", choices=["pickup", "chaos"])):
-        # See if server with name already exists
-        # Load the data from servers.json
-        with open('servers.json', 'r') as f:
-            data = json.load(f)
+        embed = Embed(title='AQtion Server List', color=0x00ff00)
+
+        # Create an empty dictionary if servers.json is empty or doesn't exist
+        try:
+            with open('servers.json', 'r') as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, FileNotFoundError):
+            data = {'servers': []}
+
         for server in data['servers']:
             if server['name'] == name:
-                await interaction.send(f"A server with the name {name} already exists.", ephemeral=True)
+                embed.description = f"A server with the name {name} already exists."
+                await interaction.send(embed=embed, ephemeral=True)
                 self.bot.reload_extension("cogs.aq2-slash")
                 return
-        
+
         # Hash the RCON password
         #rcon_hash = bcrypt.hashpw(rcon.encode(), bcrypt.gensalt()).decode()
-    
+
         # Add the new server to the data
         new_server = {
             'name': name,
@@ -54,14 +60,16 @@ class Servers(commands.Cog, name="servers"):
             #'rcon': rcon_hash
         }
         data['servers'].append(new_server)
-        
+
         # Save updated servers.json
         with open('servers.json', 'w') as f:
             json.dump(data, f, indent=4)
-        
+
         # Yass.. send success
         self.bot.reload_extension("cogs.aq2-slash")
-        await interaction.send(f"Server {name} ({ip}:{port}) has been added to the list. \N{SMILING FACE WITH HEART-SHAPED EYES}", ephemeral=True)
+        embed.description = f"Server {name} ({ip}:{port}) has been added to the list. \N{SMILING FACE WITH HEART-SHAPED EYES}"
+        await interaction.send(embed=embed, ephemeral=True)
+
 
     @commands.slash_command(
         guild_ids=[GUILDID], 
@@ -71,6 +79,7 @@ class Servers(commands.Cog, name="servers"):
     @checks.not_blacklisted()
     @checks.admin()
     async def remove_server(self, interaction: ApplicationCommandInteraction, name: str):
+        embed = Embed(title='AQtion Server List', color=0x00ff00)
         with open('servers.json', 'r') as f:
             data = json.load(f)
         # See if server with name exists
@@ -81,34 +90,42 @@ class Servers(commands.Cog, name="servers"):
                 with open('servers.json', 'w') as f:
                     json.dump(data, f, indent=4)
                 # Yass.. send success
-                await interaction.send(f"Server {name} has been removed from the list. \N{GHOST}" , ephemeral=True)
+                embed.description = f"Server {name} has been removed from the list. \N{GHOST}"
+                await interaction.send(embed=embed , ephemeral=True)
                 self.bot.reload_extension("cogs.aq2-slash")
                 return
         # Ohno.. send error :(
-        await interaction.send(f"A server with the name {name} was not found.", ephemeral=True)
+        embed.description = f"A server with the name {name} was not found."
+        await interaction.send(embed=embed, ephemeral=True)
     
     @commands.slash_command(
         guild_ids=[GUILDID], 
         name='listservers', 
         description='List all AQtion servers'
-        )
+    )
     @checks.not_blacklisted()
     @checks.admin()
     async def list_servers(self, interaction: ApplicationCommandInteraction):
         embed = Embed(title='AQtion Server List', color=0x00ff00)
-        # Loop through the servers and add them to the message (embed)
-        with open('servers.json', 'r') as f:
-            data = json.load(f)
-        
-        for server in data['servers']:
-                server_name = server['name']
-                server_ip = server['ip']
-                server_port = server['port']
-                server_admin = server['admin']
-
-                server_info = f"IP: {server_ip}:{server_port}\nAdmin: {server_admin}"
-                embed.add_field(name=server_name, value=server_info, inline=False)
-
+    
+        try:
+            with open('servers.json', 'r') as f:
+                data = json.load(f)
+    
+            if not data.get('servers'):
+                embed.description = "No servers found in the server list."
+            else:
+                for server in data['servers']:
+                    server_name = server.get('name', 'N/A')
+                    server_ip = server.get('ip', 'N/A')
+                    server_port = server.get('port', 'N/A')
+                    server_admin = server.get('admin', 'N/A')
+    
+                    server_info = f"IP: {server_ip}:{server_port}\nAdmin: {server_admin}"
+                    embed.add_field(name=server_name, value=server_info, inline=False)
+        except (json.JSONDecodeError, FileNotFoundError):
+            embed.description = "Error loading the server list."
+    
         await interaction.send(embed=embed, ephemeral=True)
 
 def setup(bot):

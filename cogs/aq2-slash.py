@@ -7,11 +7,12 @@ Version: 4.0.1
 """
 import json
 import pyrcon
-import re
+# import re
 import subprocess
 import os
 import disnake
 import sys
+from datetime import datetime
 from tabulate import tabulate
 from disnake import ApplicationCommandInteraction
 from disnake.ext import commands
@@ -24,12 +25,20 @@ else:
     with open("config.json") as file:
         config = json.load(file)
 
-# Load the servers data from file
-with open('servers.json', 'r') as f:
-    data = json.load(f)
+try:
+    # Load the servers data from file
+    with open('servers.json', 'r') as f:
+        data = json.load(f)
+        server_choices = [server.get('name', 'N/A') for server in data.get('servers', [])]
+except (json.JSONDecodeError, FileNotFoundError):
+    data = {'servers': []}
+    # Save default data to servers.json
+    with open('servers.json', 'w') as f:
+        json.dump(data, f, indent=4)
+    # Handle decoding errors or missing file
     server_choices = []
-    for server in data['servers']:
-        server_choices.append(server['name'])
+    # Provide an error message
+    print("Error loading the server list or the list is empty, creating a new.")
 
 #Add what needs to be loaded from config.json
 GUILDID = int(config["GUILD_ID"])
@@ -59,7 +68,7 @@ class Aq2(commands.Cog, name="AQ2-slash"):
                 rcon = server['rcon']
                 conn = pyrcon.Q2RConnection(ip, port, rcon)
                 result = conn.send('status v')
-                await interaction.send('```yaml\n{}\n```'.format(result), ephemeral=True)
+                await interaction.send(f'```yaml\n{result}\n```', ephemeral=True)
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -95,7 +104,7 @@ class Aq2(commands.Cog, name="AQ2-slash"):
                 port = server['port']
                 rcon = server['rcon']
                 result = pyrcon.Q2RConnection(ip, port, rcon).send(cmd)
-                await interaction.send('```yaml\n{}\n```'.format(result), ephemeral=True)
+                await interaction.send(f'```yaml\n{result}\n```', ephemeral=True)
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -118,40 +127,105 @@ class Aq2(commands.Cog, name="AQ2-slash"):
     @commands.slash_command(
         guild_ids=[GUILDID],
         name="last",
-        description="See results from the latest map on pickup or cw servers.",
+        description="See results from the latest match on pickup or cw servers.",
     )
     @checks.not_blacklisted()
-    async def last(self, interaction: ApplicationCommandInteraction, result: str = commands.Param(choices={"pickup", "chaos", "cw"})):
-        if result .lower()=='pickup':
-            file_path = '../matchlogs/pickup.txt'
-        elif result .lower()=='cw':
-            file_path = '../matchlogs/cw.txt'
-        elif result .lower()=='chaos':
-            file_path = '../matchlogs/chaos.txt'
-        with open(file_path, "r") as f:
-            line2 = f.readlines()
-        scores = re.match(r"(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
-        if scores:
-            date = scores.group(1)
-            t1score = scores.group(2)
-            t2score = scores.group(3)
-            mapname = scores.group(4)
+    async def last(self, interaction: ApplicationCommandInteraction):
+        folder_path = './servers/'  # Update this path to the correct location
+
+        file_paths = [os.path.join(folder_path, file) for file in os.listdir(folder_path) if file.endswith('.json')]
+
+        if not file_paths:
+            await interaction.send("No match data found.")
+            return
+
+        latest_file_path = max(file_paths, key=os.path.getmtime)
+
+        try:
+            with open(latest_file_path, "r") as f:
+                data = json.load(f)
+
+            # Extract relevant information from data
+            date = datetime.fromtimestamp(os.path.getmtime(latest_file_path)).strftime("%Y-%m-%d %H:%M")
+            name = data.get("name", "N/A")
+            t1score = data.get("T1", "N/A")
+            t2score = data.get("T2", "N/A")
+            mapname = data.get("map", "N/A")
+
+            players = data.get('players', [])
+            # Filter out "[MVDSPEC]"
+            players = [player for player in players if player['name'] != '[MVDSPEC]']
+            # Sort players based on their score (descending order)
+            sorted_players = sorted(players, key=lambda x: x['score'], reverse=True)
+
+            # Create and send the embed
             embedVar = disnake.Embed(
-                title = ':map:    {}    '.format(mapname),
+                title=f':map:    {mapname}    ',
                 description=date,
-                color = 0xE02B2B,
-                )
-            embedVar.set_footer(text=MVD2URL)
-            if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
-                file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
+                color=0xE02B2B,
+            )
+            embedVar.set_footer(text=name)
+            thumbnail_path = './thumbnails/{}.jpg'.format(mapname)
+            if os.path.isfile(thumbnail_path):
+                file = disnake.File(thumbnail_path, filename='map.jpg')
             else:
-                file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
-            embedVar.set_thumbnail(url="attachment://map.jpg")
-            embedVar.add_field(name='Team Uno', value=t1score, inline = True)
-            embedVar.add_field(name='Team Dos', value=t2score, inline = True)
+                file = disnake.File('./thumbnails/map.jpg', filename='map.jpg')
+            embedVar.set_thumbnail(url='attachment://map.jpg')
+            embedVar.add_field(name='Team Uno', value=t1score, inline=True)
+            embedVar.add_field(name='Team Dos', value=t2score, inline=True)
+
+            if sorted_players:
+                table_str = f"```\n{'Player':<15} {'Score':^7}\n{'-'*15} {'-'*7}"
+                for player in sorted_players:
+                    table_str += f"\n{player['name']:<15} {player['score']:^7}"
+                table_str += "```"
+                embedVar.add_field(name="\u200b", value=table_str, inline=False)
+            else:
+                embedVar.add_field(name="\u200b", value="No player data available.", inline=False)
+
             await interaction.send(file=file, embed=embedVar)
-        else:
-            await interaction.send("`Use pickup, chaos or cw`")
+
+        except Exception as e:
+            print(f"Error reading file: {e}")
+            await interaction.send("An error occurred while reading the match data.")
+
+    # @commands.slash_command(
+    #     guild_ids=[GUILDID],
+    #     name="last",
+    #     description="See results from the latest map on pickup or cw servers.",
+    # )
+    # @checks.not_blacklisted()
+    # async def last(self, interaction: ApplicationCommandInteraction, result: str = commands.Param(choices={"pickup", "chaos", "cw"})):
+    #     if result .lower()=='pickup':
+    #         file_path = '../matchlogs/pickup.txt'
+    #     elif result .lower()=='cw':
+    #         file_path = '../matchlogs/cw.txt'
+    #     elif result .lower()=='chaos':
+    #         file_path = '../matchlogs/chaos.txt'
+    #     with open(file_path, "r") as f:
+    #         line2 = f.readlines()
+    #     scores = re.match(r"(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
+    #     if scores:
+    #         date = scores.group(1)
+    #         t1score = scores.group(2)
+    #         t2score = scores.group(3)
+    #         mapname = scores.group(4)
+    #         embedVar = disnake.Embed(
+    #             title = ':map:    {}    '.format(mapname),
+    #             description=date,
+    #             color = 0xE02B2B,
+    #             )
+    #         embedVar.set_footer(text=MVD2URL)
+    #         if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
+    #             file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
+    #         else:
+    #             file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
+    #         embedVar.set_thumbnail(url="attachment://map.jpg")
+    #         embedVar.add_field(name='Team Uno', value=t1score, inline = True)
+    #         embedVar.add_field(name='Team Dos', value=t2score, inline = True)
+    #         await interaction.send(file=file, embed=embedVar)
+    #     else:
+    #         await interaction.send("`Use pickup, chaos or cw`")
 
     @commands.slash_command(
         guild_ids=[GUILDID],
