@@ -28,4 +28,4 @@ Feel free to manipulate this code as much as you want and for sure make it bette
 Also big thanks to [kkrypt0nn](https://github.com/kkrypt0nn/), [texnofobix](https://github.com/texnofobix/) and [Unity-Technologies](https://github.com/Unity-Technologies/) for the great work with the stuff I use and need to get this small project working.
 
 ## License
-What? or yeah.. read the licenses from qstat and kkrypt0nn's discordbot-template to see that all is good. Probably I need to make some updates here also so it complies.
+What? or yeah.. read the licenses from qstat, kkrypt0nn's discordbot-template and pyrcon to see that all is good. Probably I need to make some updates here also so it complies.
