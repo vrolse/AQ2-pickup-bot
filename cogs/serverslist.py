@@ -152,7 +152,7 @@ class Servers(commands.Cog, name="servers"):
                     server_port = server.get('port', 'N/A')
                     server_admin = server.get('admin', 'N/A')
     
-                    server_info = f"IP: {server_ip}:{server_port}\nAdmin: {server_admin}"
+                    server_info = f"IP: {server_ip}:{server_port}\nadmin: {server_admin}"
                     embed.add_field(name=server_name, value=server_info, inline=False)
         except (json.JSONDecodeError, FileNotFoundError):
             embed.description = "Error loading the server list."
