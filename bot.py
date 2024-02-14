@@ -57,7 +57,10 @@ def load_processed_files():
         with open('processed_files.json', 'r') as file:
             return json.load(file)
     except FileNotFoundError:
-        return {}
+        # Create the file with an empty dictionary
+        with open('processed_files.json', 'w') as file:
+            json.dump({}, file)
+        return {}  # Return empty dictionary
 
 # Save processed filenames and timestamps
 def save_processed_files(processed_files):

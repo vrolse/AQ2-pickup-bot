@@ -47,7 +47,7 @@ def not_blacklisted() -> Callable[[T], T]:
 
 def admin() -> Callable[[T], T]:
     """
-    This is a custom check to see if the user executing the command is blacklisted.
+    This is a custom check to see if the user executing the command is an admin.
     """
 
     async def predicate(context: commands.Context) -> bool:
