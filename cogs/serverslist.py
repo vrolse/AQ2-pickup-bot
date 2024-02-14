@@ -41,7 +41,7 @@ class Servers(commands.Cog, name="servers"):
     def __init__(self, bot):
         self.bot = bot
 
-    # Add reload_cogs call to reduce code duplication
+    # Add reload_cogs call to reload the cogs in a better way than before
     async def send_embed_and_reload_cogs(self, interaction, embed, cogs_to_reload):
         await interaction.send(embed=embed, ephemeral=True)
         await reload_cogs(self.bot, cogs_to_reload)
@@ -170,6 +170,7 @@ class Servers(commands.Cog, name="servers"):
         self,
         interaction: ApplicationCommandInteraction,
         servers: str = commands.Param(name="server", choices=server_choices),
+        newname: str = None,
         ip: str = None,
         port: str = None,
         rcon: str = None,
@@ -178,7 +179,6 @@ class Servers(commands.Cog, name="servers"):
     ):
         embed = Embed(title='AQtion Server List', color=0x00ff00)
 
-        # Load existing server data
         try:
             with open('servers.json', 'r') as f:
                 data = json.load(f)
@@ -188,12 +188,7 @@ class Servers(commands.Cog, name="servers"):
             await reload_cogs(self.bot, cogs_to_reload)
             return
 
-        # Find the server to be edited
-        server_to_edit = None
-        for server in data['servers']:
-            if server['name'] == servers:
-                server_to_edit = server
-                break
+        server_to_edit = next((server for server in data['servers'] if server['name'] == servers), None)
 
         if not server_to_edit:
             embed.description = f"A server with the name **{servers}** was not found."
@@ -201,27 +196,41 @@ class Servers(commands.Cog, name="servers"):
             await reload_cogs(self.bot, cogs_to_reload)
             return
 
-        # Update server info
-        if ip is not None:
-            server_to_edit['ip'] = ip
-        if port is not None:
-            server_to_edit['port'] = port
-        if rcon is not None:
-            server_to_edit['rcon'] = rcon
-        if admin is not None:
-            server_to_edit['admin'] = admin
-        if gametype is not None:
-            server_to_edit['type'] = gametype
+        changes_made = False
+        fields_to_check = {
+            'name': ('Name Change', newname),
+            'ip': ('New IP', ip),
+            'port': ('New PORT', port),
+            'rcon': ('New RCON', rcon),
+            'admin': ('New ADMIN', admin),
+            'type': ('New GAMETYPE', gametype)
+        }
 
-        # Save updated servers.json
+        for field, (field_name, new_value) in fields_to_check.items():
+            if new_value is not None:
+                if field == 'rcon':
+                    # Chech if the rcon is updated
+                    if server_to_edit.get(field) != new_value:
+                        embed.add_field(name=field_name, value="The RCON has been changed.")
+                        server_to_edit[field] = new_value
+                        changes_made = True
+                else:
+                    if server_to_edit.get(field) != new_value:
+                        embed.add_field(name=field_name, value=f"`{server_to_edit.get(field)}` **->** `{new_value}`")
+                        server_to_edit[field] = new_value
+                        changes_made = True
+        
+        if not changes_made:
+            embed.description = f"No changes were made to server **{servers}**."
+            await interaction.send(embed=embed, ephemeral=True)
+            return
+                    
         with open('servers.json', 'w') as f:
             json.dump(data, f, indent=4)
 
-        # Yass.. send success
-        embed.description = f"Server **{servers}** has been successfully updated."
+        embed.description = f"Server has been successfully updated."
         await interaction.send(embed=embed, ephemeral=True)
         await reload_cogs(self.bot, cogs_to_reload)
-
 
 def setup(bot):
     bot.add_cog(Servers(bot))
