@@ -240,24 +240,31 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             if aqserver in server['name']:
                 ip = server['ip']
                 port = server['port']
-                s = subprocess.check_output([qs, '-q2s', ip + ':' + port, '-R', '-P', '-sort', 'F', '-json'])
-                data = json.loads(s)
+                try:
+                    s = subprocess.check_output([qs, '-q2s', ip + ':' + port, '-R', '-P', '-sort', 'F', '-json'], timeout=10)
+                    data = json.loads(s)
+                    if data[0]['status'] in ['offline', 'timeout']:
+                        await interaction.send(f"The server {aqserver} is offline or not available.")
+                    else:
+                        player_headers = ['Player', 'Score', 'Ping']
+                        player_data = []
+                        team_data = []
 
-                player_headers = ['Player', 'Score', 'Ping']
-                player_data = []
-                team_data = []
+                        if 't1' in data[0]['rules'] and 't2' in data[0]['rules']:
+                            team_data.append({'Team uno': data[0]['rules']['t1'], 'Team dos': data[0]['rules']['t2']})
 
-                if 't1' in data[0]['rules'] and 't2' in data[0]['rules']:
-                    team_data.append({'Team uno': data[0]['rules']['t1'], 'Team dos': data[0]['rules']['t2']})
-            
-                for player in data[0]['players']:
-                    player_data.append([player['name'], player['score'], player['ping']])
+                        for player in data[0]['players']:
+                            player_data.append([player['name'], player['score'], player['ping']])
 
-                map = data[0]['map']
-                maptime = data[0]['rules']['maptime']
-                teamscore = tabulate(team_data, headers='keys', tablefmt='rounded_outline', numalign='center')
-                players = tabulate(player_data, headers=player_headers, tablefmt='simple', numalign='center')
-                await interaction.send(f"```json\n{data[0]['name']}\n\nMap: {map}\nTime: {maptime}\n\n{teamscore}\n\n{players}```")
+                        map = data[0]['map']
+                        maptime = data[0]['rules']['maptime']
+                        teamscore = tabulate(team_data, headers='keys', tablefmt='rounded_outline', numalign='center')
+                        players = tabulate(player_data, headers=player_headers, tablefmt='simple', numalign='center')
+                        await interaction.send(f"```json\n{data[0]['name']}\n\nMap: {map}\nTime: {maptime}\n\n{teamscore}\n\n{players}```")
+                except subprocess.TimeoutExpired:
+                    await interaction.send(f"The server {aqserver} did not respond within the expected time.")
+                except Exception as e:
+                    await interaction.send(f"An error occurred while checking the server")
 
 def setup(bot):
     bot.add_cog(Aq2(bot))
