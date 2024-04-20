@@ -56,7 +56,7 @@ def load_processed_files():
     try:
         with open('processed_files.json', 'r') as file:
             return json.load(file)
-    except FileNotFoundError:
+    except (FileNotFoundError, json.JSONDecodeError):
         # Create the file with an empty dictionary
         with open('processed_files.json', 'w') as file:
             json.dump({}, file)
@@ -109,12 +109,12 @@ async def match_over():
             sorted_players = sorted(players, key=lambda x: x['score'], reverse=True)
 
             embedVar = disnake.Embed(
-                title=':map:    {}    '.format(mapname),
+                title=f':map:    {mapname}    ',
                 description=MVD2URL,
                 color=0xE02B2B,
             )
             embedVar.set_footer(text=name)
-            thumbnail_path = './thumbnails/{}.jpg'.format(mapname)
+            thumbnail_path =f'./thumbnails/{mapname}.jpg'
             if os.path.isfile(thumbnail_path):
                 file = disnake.File(thumbnail_path, filename='map.jpg')
             else:
