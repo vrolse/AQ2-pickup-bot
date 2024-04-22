@@ -156,7 +156,7 @@ class Owner(commands.Cog, name="owner-slash"):
             await interaction.send(embed=embed, ephemeral=True)
             print(exception)
             
-    @commands.slash.commnad(
+    @commands.slash_command(
         guild_ids=[GUILDID],
         name="getthumbs",
         description="Update map thumbnails",
@@ -166,7 +166,7 @@ class Owner(commands.Cog, name="owner-slash"):
         # GitHub repository details
         repo_user = config["REPO_USER"]
         repo_name = config["REPO_NAME"]
-        branch = config["GITBRANSH"]
+        branch = config["BRANCH"]
 
         # Directory within the repository to download
         directory = config["GITDIRECTORY"]
