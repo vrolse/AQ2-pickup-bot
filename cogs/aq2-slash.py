@@ -189,44 +189,6 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             print(f"Error reading file: {e}")
             await interaction.send("An error occurred while reading the match data.")
 
-    # @commands.slash_command(
-    #     guild_ids=[GUILDID],
-    #     name="last",
-    #     description="See results from the latest map on pickup or cw servers.",
-    # )
-    # @checks.not_blacklisted()
-    # async def last(self, interaction: ApplicationCommandInteraction, result: str = commands.Param(choices={"pickup", "chaos", "cw"})):
-    #     if result .lower()=='pickup':
-    #         file_path = '../matchlogs/pickup.txt'
-    #     elif result .lower()=='cw':
-    #         file_path = '../matchlogs/cw.txt'
-    #     elif result .lower()=='chaos':
-    #         file_path = '../matchlogs/chaos.txt'
-    #     with open(file_path, "r") as f:
-    #         line2 = f.readlines()
-    #     scores = re.match(r"(.+)> T1 (\d+) vs (\d+) T2 @ (.+)",line2[0])
-    #     if scores:
-    #         date = scores.group(1)
-    #         t1score = scores.group(2)
-    #         t2score = scores.group(3)
-    #         mapname = scores.group(4)
-    #         embedVar = disnake.Embed(
-    #             title = ':map:    {}    '.format(mapname),
-    #             description=date,
-    #             color = 0xE02B2B,
-    #             )
-    #         embedVar.set_footer(text=MVD2URL)
-    #         if not os.path.isfile('./thumbnails/{}.jpg'.format(mapname)):
-    #             file = disnake.File('./thumbnails/map.jpg', filename="map.jpg")
-    #         else:
-    #             file = disnake.File('./thumbnails/{}.jpg'.format(mapname), filename="map.jpg")
-    #         embedVar.set_thumbnail(url="attachment://map.jpg")
-    #         embedVar.add_field(name='Team Uno', value=t1score, inline = True)
-    #         embedVar.add_field(name='Team Dos', value=t2score, inline = True)
-    #         await interaction.send(file=file, embed=embedVar)
-    #     else:
-    #         await interaction.send("`Use pickup, chaos or cw`")
-
     @commands.slash_command(
         guild_ids=[GUILDID],
         name="check",
