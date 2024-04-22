@@ -195,8 +195,7 @@ class Owner(commands.Cog, name="owner-slash"):
                     with open(file_path, "wb") as file:
                         response = requests.get(file_url, stream=True)
                         if response.status_code == 200:
-                            for chunk in response.iter_content(chunk_size=8192):
-                                file.write(chunk)
+                            file.write(response.content)
                             file_names.append(filename)
                             downloaded_files += 1
                         else:
@@ -211,7 +210,8 @@ class Owner(commands.Cog, name="owner-slash"):
             else:
                 messages.append(f"Downloaded {downloaded_files} file(s) in total.")
 
-        await interaction.edit_original_response(content="\n".join(messages))
+        # Send the ephemeral response to the user who used the command
+        await interaction.followup.send("\n".join(messages))
             
 def setup(bot):
     bot.add_cog(Owner(bot))
