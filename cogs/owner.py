@@ -159,24 +159,28 @@ class Owner(commands.Cog, name="owner-slash"):
     @commands.slash_command(
         guild_ids=[GUILDID],
         name="getthumbs",
-        description="Update map thumbnails",
+        description="Download map thumbnails",
     )
     @checks.is_owner()
     async def getthumbs(self, interaction: ApplicationCommandInteraction):
+        # Defer the interaction response first
+        await interaction.response.defer(ephemeral=True)
+
         # GitHub repository details
         repo_user = config["REPO_USER"]
         repo_name = config["REPO_NAME"]
         branch = config["BRANCH"]
 
         # Directory within the repository to download
-        directory = config["GITDIRECTORY"]
+        directory = config["DIRECTORY"]
 
         # Destination directory for downloaded files
-        download_directory = config["PATH_TO_THUMBS"]
+        download_directory = config["DLDIRECTORY"]
 
         # API URL to get the contents of the directory
         api_url = f"https://api.github.com/repos/{repo_user}/{repo_name}/contents/{directory}?ref={branch}"
         downloaded_files = 0
+        file_names = []
         messages = []
 
         response = requests.get(api_url)
@@ -185,22 +189,29 @@ class Owner(commands.Cog, name="owner-slash"):
 
             for file_url in file_urls:
                 filename = os.path.basename(file_url)
+                file_path = os.path.join(download_directory, filename)
 
-                if not os.path.exists(os.path.join(download_directory, filename)):
-                    with open(os.path.join(download_directory, filename), "wb") as file:
-                        file_content = requests.get(file_url).content
-                        file.write(file_content)
-                        messages.append(f"Downloaded: {filename}")
-                        downloaded_files += 1
-                else:
-                    messages.append(f"File already exists: {filename}")
+                if not os.path.exists(file_path):
+                    with open(file_path, "wb") as file:
+                        response = requests.get(file_url, stream=True)
+                        if response.status_code == 200:
+                            for chunk in response.iter_content(chunk_size=8192):
+                                file.write(chunk)
+                            file_names.append(filename)
+                            downloaded_files += 1
+                        else:
+                            messages.append(f"Failed to download: {filename} (HTTP status code: {response.status_code})")
 
         if downloaded_files == 0:
             messages.append("No new files needed to be downloaded.")
         else:
-            messages.append(f"Downloaded {downloaded_files} file(s).")
+            # Send only the names of the downloaded files, up to 10 files
+            if len(file_names) <= 10:
+                messages.extend([f"Downloaded: {filename}" for filename in file_names])
+            else:
+                messages.append(f"Downloaded {downloaded_files} file(s) in total.")
 
-        await interaction.send("\n".join(messages), ephemeral=True)
-
+        await interaction.edit_original_response(content="\n".join(messages))
+            
 def setup(bot):
     bot.add_cog(Owner(bot))
