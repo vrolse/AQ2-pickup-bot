@@ -159,9 +159,10 @@ class Owner(commands.Cog, name="owner-slash"):
     @commands.slash_command(
         guild_ids=[GUILDID],
         name="getthumbs",
-        description="Download map thumbnails",
+        description="Download/update map thumbnails",
     )
     @checks.is_owner()
+    @checks.not_blacklisted()
     async def getthumbs(self, interaction: ApplicationCommandInteraction):
         # Defer the interaction response first
         await interaction.response.defer(ephemeral=True)
@@ -170,8 +171,6 @@ class Owner(commands.Cog, name="owner-slash"):
         repo_user = config["REPO_USER"]
         repo_name = config["REPO_NAME"]
         branch = config["BRANCH"]
-
-        # Directory within the repository to download
         directory = config["DIRECTORY"]
 
         # Destination directory for downloaded files
@@ -185,15 +184,17 @@ class Owner(commands.Cog, name="owner-slash"):
 
         response = requests.get(api_url)
         if response.status_code == 200:
-            file_urls = [item["download_url"] for item in response.json()]
+            files_data = response.json()
 
-            for file_url in file_urls:
-                filename = os.path.basename(file_url)
+            for file_data in files_data:
+                filename = file_data["name"]
+                file_url = file_data["download_url"]
                 file_path = os.path.join(download_directory, filename)
 
-                if not os.path.exists(file_path):
+                if not os.path.exists(file_path) or os.path.getsize(file_path) != file_data["size"]:
+                    # File doesn't exist or sizes are different, download it
                     with open(file_path, "wb") as file:
-                        response = requests.get(file_url, stream=True)
+                        response = requests.get(file_url)
                         if response.status_code == 200:
                             file.write(response.content)
                             file_names.append(filename)

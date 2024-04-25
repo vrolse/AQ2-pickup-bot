@@ -228,5 +228,29 @@ class Aq2(commands.Cog, name="AQ2-slash"):
                 except Exception as e:
                     await interaction.send(f"An error occurred while checking the server")
 
+    @commands.slash_command(
+        guild_ids=[GUILDID],
+        name="mapimage",
+        description="Send DM with a picture of the map",
+    )
+    @checks.not_blacklisted()
+    async def map_image(self, interaction: ApplicationCommandInteraction, mapname: str):
+        # Check if the map image file exists
+        imagedir = config["DLDIRECTORY"]
+        map_filename = f"{mapname}.jpg"
+        map_path = os.path.join(imagedir, map_filename)
+
+        if os.path.isfile(map_path):
+            # Get the user who invoked the command
+            user = interaction.user
+
+            # Send the map image as a direct message to the user
+            with open(map_path, "rb") as file:
+                await user.send(f"Here is the map image for {mapname}:", file=disnake.File(file, map_filename))
+            
+            await interaction.response.send_message("Map image sent as a direct message.", ephemeral=True)
+        else:
+            await interaction.response.send_message(f"Map image for {mapname} not found.", ephemeral=True)
+
 def setup(bot):
     bot.add_cog(Aq2(bot))
