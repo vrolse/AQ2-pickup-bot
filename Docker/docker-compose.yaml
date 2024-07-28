@@ -1,0 +1,13 @@
+services:
+  AQ2-pickup:
+    build: .
+    image: aq2pickup/discordbot
+    container_name: AQ2-pickup-bot
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    env_file:
+     - Insert your .env file here
+    volumes:
+     - Insert path/to/servers.json
+     - Insert path/to/servers/

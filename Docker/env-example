@@ -1,0 +1,16 @@
+PREFIX=for-example-> ! <-
+DISCORDBOTTOKEN=your-bot-token-here
+PERMISSIONS=bot-permissions
+APPID=the-app-id
+YOURDISCORDID=your-discord-id
+GUILDID=guildid
+CHANNELID=channelid
+ROLEID=the-roleid-for-admins
+YOURSITE=url-to-your-site
+QSTAT=path-to-qstat
+TZ=Europe/Stockholm
+REPO_USER=github-username
+REPO_NAME=AQ2-pickup-bot
+BRANCH=eg. main
+DIRECTORY=thumbnails
+DLDIRECTORY=path-to-thumbnails
