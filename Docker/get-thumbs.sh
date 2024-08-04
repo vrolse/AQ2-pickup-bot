@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # GitHub repository details
 repo_user=$REPO_USER

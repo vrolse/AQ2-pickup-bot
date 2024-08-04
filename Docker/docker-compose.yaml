@@ -1,6 +1,8 @@
 services:
   AQ2-pickup:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: aq2pickup/discordbot
     container_name: AQ2-pickup-bot
     stdin_open: true
@@ -8,6 +10,3 @@ services:
     restart: unless-stopped
     env_file:
      - Insert your .env file here
-    volumes:
-     - Insert path/to/servers.json
-     - Insert path/to/servers/

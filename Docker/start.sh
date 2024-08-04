@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/bin/bash
 
 # List of required environment variables
-required_vars=("DISCORDTOKEN" "APPID" "YOURDISCORDID" "GUILDID" "CHANNELID" "ROLEID" "YOURSITE" "QSTAT" "REPO_USER" "REPO_NAME" "BRANSH" "DIRECTORY" "DLDIRECTORY")
+required_vars=("DISCORDBOTTOKEN" "APPID" "YOURDISCORDID" "GUILDID" "CHANNELID" "ROLEID" "YOURSITE" "QSTAT" "REPO_USER" "REPO_NAME" "BRANCH" "DIRECTORY" "DLDIRECTORY")
 
 # Check if required environment variables are set
 for var in "${required_vars[@]}"; do
@@ -14,7 +14,7 @@ done
 # GitHub repository details
 repo_user=$REPO_USER
 repo_name=$REPO_NAME
-branch=$BRANSH
+branch=$BRANCH
 directory=$DIRECTORY
 
 # Destination directory for downloaded files
@@ -37,7 +37,7 @@ update_config() {
     sed -i "s:PATH_TO_QSTAT:$QSTAT:g" AQ2-pickup/config.json
     sed -i "s:REPOUSERNAME:$REPO_USER:g" AQ2-pickup/config.json
     sed -i "s:REPONAME:$REPO_NAME:g" AQ2-pickup/config.json
-    sed -i "s:GITBRANSH:$BRANSH:g" AQ2-pickup/config.json
+    sed -i "s:GITBRANCH:$BRANCH:g" AQ2-pickup/config.json
     sed -i "s:GITDIRECTORY:$DIRECTORY:g" AQ2-pickup/config.json
     sed -i "s:PATH_TO_THUMBS:$DLDIRECTORY:g" AQ2-pickup/config.json
 }
