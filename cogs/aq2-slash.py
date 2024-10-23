@@ -51,29 +51,16 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         self.bot = bot
         
     def parse_status_response(self, response: str) -> dict:
-        """
-        Parse the response from 'status v' and return a dictionary mapping player numbers to names.
-        Example:
-            Current map: urban
-            num name            version
-            --- --------------- -----------------------------------------
-              0 vrol            AQtion r1~c981fcb Oct 13 2023 Win64 x86_64
-            No TCP clients.
-        Returns:
-            {0: 'vrol'}
-        """
         players = {}
-        
-        # Regular expression to match lines like "0 vrol ..."
         pattern = re.compile(r"^\s*(\d+)\s+(\S+)\s+")
-        
+
         for line in response.splitlines():
             match = pattern.match(line)
             if match:
                 player_num = int(match.group(1))
                 player_name = match.group(2)
                 players[player_num] = player_name
-        
+
         return players
         
     """AQ2 commands below here"""
