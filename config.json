@@ -3,9 +3,7 @@
   "token": "DISCORDBOTTOKEN",
   "permissions": "PERMISSIONS",
   "application_id": "APPID",
-  "owners": [
-    YOURDISCORDID
-  ],
+  "owners": "YOURDISCORDID",
   "GUILD_ID": "GUILDID",
   "CHANNEL_ID": "CHANNELID",
   "ROLE_ID": [

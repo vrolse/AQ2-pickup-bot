@@ -7,7 +7,7 @@ Version: 4.0.1
 """
 import json
 import pyrcon
-# import re
+import re
 import subprocess
 import os
 import disnake
@@ -44,10 +44,37 @@ except (json.JSONDecodeError, FileNotFoundError):
 GUILDID = int(config["GUILD_ID"])
 MVD2URL = config["MVD2URL"]
 qs = config["QSTAT"]
-       
+
+
 class Aq2(commands.Cog, name="AQ2-slash"):
     def __init__(self, bot):
         self.bot = bot
+        
+    def parse_status_response(self, response: str) -> dict:
+        """
+        Parse the response from 'status v' and return a dictionary mapping player numbers to names.
+        Example:
+            Current map: urban
+            num name            version
+            --- --------------- -----------------------------------------
+              0 vrol            AQtion r1~c981fcb Oct 13 2023 Win64 x86_64
+            No TCP clients.
+        Returns:
+            {0: 'vrol'}
+        """
+        players = {}
+        
+        # Regular expression to match lines like "0 vrol ..."
+        pattern = re.compile(r"^\s*(\d+)\s+(\S+)\s+")
+        
+        for line in response.splitlines():
+            match = pattern.match(line)
+            if match:
+                player_num = int(match.group(1))
+                player_name = match.group(2)
+                players[player_num] = player_name
+        
+        return players
         
     """AQ2 commands below here"""
 
@@ -103,8 +130,37 @@ class Aq2(commands.Cog, name="AQ2-slash"):
                 ip = server['ip']
                 port = server['port']
                 rcon = server['rcon']
-                result = pyrcon.Q2RConnection(ip, port, rcon).send(cmd)
-                await interaction.send(f'```yaml\n{result}\n```', ephemeral=True)
+                
+                if cmd.startswith('teamnone'):
+                    try:
+                        _, number = cmd.split()
+                        number = int(number)
+                        status_response = pyrcon.Q2RConnection(ip, port, rcon).send("status v")
+                        players = self.parse_status_response(status_response)
+                        
+                        if number in players:
+                            player_name = players[number]
+                            result = pyrcon.Q2RConnection(ip, port, rcon).send(f"teamnone {number}")
+                            await interaction.send(
+                                f'```yaml\nPlayer {player_name} (ID {number}) has been removed from the team\n```',
+                                ephemeral=True
+                            )
+                        else:
+                            await interaction.send(
+                                f'```yaml\nNo player with ID {number} found.\n```',
+                                ephemeral=True
+                            )
+                    except ValueError:
+                        await interaction.send(
+                            '```yaml\nInvalid format for teamnone. Please provide a valid number.\n```',
+                            ephemeral=True
+                        )
+                else:
+                    result = pyrcon.Q2RConnection(ip, port, rcon).send(cmd)
+                    await interaction.send(f'```yaml\n{result}\n```', ephemeral=True)
+                break
+        else:
+            await interaction.send('```yaml\nServer not found.\n```', ephemeral=True)
 
     @commands.slash_command(
         guild_ids=[GUILDID],
