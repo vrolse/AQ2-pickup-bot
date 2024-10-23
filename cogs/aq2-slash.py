@@ -52,7 +52,7 @@ class Aq2(commands.Cog, name="AQ2-slash"):
         
     def parse_status_response(self, response: str) -> dict:
         players = {}
-        pattern = re.compile(r"^\s*(\d+)\s+(\S+)\s+")
+        pattern = re.compile(r"(\d+)\s+(\S+)")
 
         for line in response.splitlines():
             match = pattern.match(line)
