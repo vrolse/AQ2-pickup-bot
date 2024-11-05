@@ -14,3 +14,4 @@ REPO_NAME=AQ2-pickup-bot
 BRANCH=eg. main
 DIRECTORY=thumbnails
 DLDIRECTORY=path-to-thumbnails
+EOLMSG=your-eol-msg

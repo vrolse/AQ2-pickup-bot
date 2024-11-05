@@ -1,5 +1,5 @@
 """ 
-Sad attempt at making a betting thingy.
+Sad attempt at making a betting thingy, not fully finnished.
 """
 import json
 import os

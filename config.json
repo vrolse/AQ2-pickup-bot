@@ -3,7 +3,9 @@
   "token": "DISCORDBOTTOKEN",
   "permissions": "PERMISSIONS",
   "application_id": "APPID",
-  "owners": "YOURDISCORDID",
+  "owners": [
+    YOURDISCORDID
+  ],
   "GUILD_ID": "GUILDID",
   "CHANNEL_ID": "CHANNELID",
   "ROLE_ID": [
@@ -15,5 +17,6 @@
   "REPO_NAME": "REPONAME",
   "BRANCH": "GITBRANCH",
   "DIRECTORY": "GITDIRECTORY",
-  "DLDIRECTORY": "PATH_TO_THUMBS"
+  "DLDIRECTORY": "PATH_TO_THUMBS",
+  "EOLMSG": "YOUR_EOL_MSG"
 }

@@ -189,6 +189,15 @@ async def on_slash_command_error(interaction: ApplicationCommandInteraction, err
         print("Someone that is not an admin tried to execute a command.")
         return await interaction.send(embed=embed, ephemeral=True)
     
+    elif isinstance(error, exceptions.UserNotOwner):
+        embed = disnake.Embed(
+            title="Error!",
+            description="You are not the owner of the bot!",
+            color=0xE02B2B
+        )
+        print("Someone that is not the owner tried to execute a command.")
+        return await interaction.send(embed=embed, ephemeral=True)
+    
     elif isinstance(error, exceptions.UserBlacklisted):
         embed = disnake.Embed(
             title="Error!",
