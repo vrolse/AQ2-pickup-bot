@@ -1,5 +1,5 @@
 aiohttp
-disnake
+disnake == 2.9.1
 requests
 git+https://github.com/texnofobix/pyrcon.git#python37
 tabulate
