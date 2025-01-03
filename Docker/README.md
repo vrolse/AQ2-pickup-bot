@@ -23,6 +23,7 @@ Host the bot using Docker.
     BRANCH=eg. main
     DIRECTORY=thumbnails
     DLDIRECTORY=path-to-thumbnails
+    EOLMSG=your-eol-msg
     ```
 
 2. You may need to make some changes to the bot's code as it is not perfect. Ensure you edit the delimiter character in `start.sh` so it works with the environment variables.
@@ -45,6 +46,7 @@ Host the bot using Docker.
 - `BRANCH`: Branch name (e.g., `main`)
 - `DIRECTORY`: Directory for thumbnails
 - `DLDIRECTORY`: Path to download thumbnails
+- `EOLMSG`: The message that should be sent to the bot in a DM for it to shut down and send the message in eol.py
 
 ## Notes
 
