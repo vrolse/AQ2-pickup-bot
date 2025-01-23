@@ -24,6 +24,7 @@ Host the bot using Docker.
     DIRECTORY=thumbnails
     DLDIRECTORY=path-to-thumbnails
     EOLMSG=your-eol-msg
+    BASE_URL=URL-to-maps
     ```
 
 2. You may need to make some changes to the bot's code as it is not perfect. Ensure you edit the delimiter character in `start.sh` so it works with the environment variables.
