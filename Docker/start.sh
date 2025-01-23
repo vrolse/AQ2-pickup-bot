@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # List of required environment variables
-required_vars=("DISCORDBOTTOKEN" "APPID" "YOURDISCORDID" "GUILDID" "CHANNELID" "ROLEID" "YOURSITE" "QSTAT" "REPO_USER" "REPO_NAME" "BRANCH" "DIRECTORY" "DLDIRECTORY" "EOLMSG")
+required_vars=("DISCORDBOTTOKEN" "APPID" "YOURDISCORDID" "GUILDID" "CHANNELID" "ROLEID" "YOURSITE" "QSTAT" "REPO_USER" "REPO_NAME" "BRANCH" "DIRECTORY" "DLDIRECTORY" "EOLMSG" "BASE_URL")
 
 # Check if required environment variables are set
 for var in "${required_vars[@]}"; do
@@ -41,6 +41,7 @@ update_config() {
     sed -i "s:GITDIRECTORY:$DIRECTORY:g" AQ2-pickup/config.json
     sed -i "s:PATH_TO_THUMBS:$DLDIRECTORY:g" AQ2-pickup/config.json
     sed -i "s:YOUR_EOL_MSG:$EOLMSG:g" AQ2-pickup/config.json
+    sed -i "s-YOURBASEURL-$BASE_URL-g" AQ2-pickup/config.json
 }
 
 # Function to download files from GitHub repository

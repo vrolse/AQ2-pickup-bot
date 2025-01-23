@@ -47,6 +47,7 @@ Host the bot using Docker.
 - `DIRECTORY`: Directory for thumbnails
 - `DLDIRECTORY`: Path to download thumbnails
 - `EOLMSG`: The message that should be sent to the bot in a DM for it to shut down and send the message in eol.py
+- `BASE_URL`: URL to maps
 
 ## Notes
 

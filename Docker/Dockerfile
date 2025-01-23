@@ -35,7 +35,7 @@ RUN chmod +x /home/bot/start.sh /home/bot/get-thumbs.sh /home/bot/AQ2-pickup/qst
 USER bot
 
 # Set entrypoint
-ENTRYPOINT ["/home/bot/start.sh"]
+ENTRYPOINT /home/bot/start.sh
 
 # Set environment variables
 ENV PREFIX for-example->!<-
@@ -55,3 +55,4 @@ ENV BRANCH GITBRANCH
 ENV DIRECTORY GITDIRECTORY
 ENV DLDIRECTORY PATH_TO_THUMBS
 ENV EOLMSG YOUR_EOL_MSG
+ENV BASE_URL YOURBASEURL
