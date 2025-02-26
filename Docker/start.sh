@@ -44,7 +44,7 @@ update_config() {
     sed -i "s-YOURBASEURL-$BASE_URL-g" AQ2-pickup/config.json
 }
 
-# Function to download files from GitHub repository
+# Function to download files from GitHub repository in the background
 download_files() {
     downloaded_files=0
 
@@ -58,20 +58,18 @@ download_files() {
         filename=$(basename "$file_url")
 
         if [ ! -e "$download_directory/$filename" ] || [ "$file_url" -nt "$download_directory/$filename" ]; then
-            if curl -s -L "$file_url" -o "$download_directory/$filename"; then
-                echo "Downloaded: $filename"
-                downloaded_files=$((downloaded_files + 1))
-            else
-                echo "Failed to download: $filename"
-            fi
+            (
+                if curl -s -L "$file_url" -o "$download_directory/$filename"; then
+                    echo "Downloaded: $filename"
+                else
+                    echo "Failed to download: $filename"
+                fi
+            ) &
         fi
     done < <(curl -s "$api_url" | grep -o '"download_url": "[^"]*' | cut -d'"' -f4)
 
-    if [ "$downloaded_files" -eq 0 ]; then
-        echo "No new files needed to be downloaded."
-    else
-        echo "Downloaded $downloaded_files file(s)."
-    fi
+    wait  # Ensure all background downloads finish
+    echo "All downloads complete."
 }
 
 # Check if config.json exists
@@ -83,9 +81,11 @@ fi
 # Update config.json
 update_config
 
-# Download files from GitHub repository
-download_files
+# Start downloading files in the background
+download_files &
 
-# Start the bot
+# Start the bot immediately
 cd /home/bot/AQ2-pickup/
 python3 bot.py
+
+wait
