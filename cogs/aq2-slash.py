@@ -61,7 +61,7 @@ def get_server_details(aqserver: str):
     with open('servers.json', 'r') as f:
         data = json.load(f)
     for server in data['servers']:
-        if aqserver in server['name']:
+        if aqserver.strip().lower() == server['name'].strip().lower():  # Ensure match
             return server['ip'], server['port'], server['rcon']
     raise ValueError(f"Server '{aqserver}' not found.")
 
