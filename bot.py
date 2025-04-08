@@ -5,7 +5,7 @@ This is a template to create your own discord bot in python.
 
 Version: 4.0.1
 """
-
+import logging
 import json
 import os
 import random
@@ -18,6 +18,10 @@ from disnake import ApplicationCommandInteraction
 from disnake.ext import tasks, commands
 from disnake.ext.commands import Bot
 from disnake.ext.commands import Context
+
+logging.getLogger("disnake").setLevel(logging.WARNING)
+logging.getLogger("disnake.client").setLevel(logging.WARNING)
+logging.getLogger("disnake.gateway").setLevel(logging.WARNING)
 
 if not os.path.isfile("config.json"):
     sys.exit("'config.json' not found! Please add it and try again.")
