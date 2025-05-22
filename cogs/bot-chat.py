@@ -32,6 +32,7 @@ class botchat(commands.Cog, name="bot-chat"):
         )  # Initialize the Pollinations text generator
         self.chat_history = defaultdict(lambda: deque(maxlen=6))  # Store last 6 exchanges per user
         self.last_message_time = {}
+        self.slash_last_used = {}
 
     @commands.slash_command(name="botchat", description="Chat with the bot!", guild_ids=[GUILDID])
     @checks.not_blacklisted()
