@@ -14,3 +14,4 @@
 - [x] Set up Docker configuration for running the bot.
 
 - [ ] Aspirational goal: Create a dashboard for the bot (even if it’s just in our dreams! 😅)
+- [x] Aspirational goal: Add some sort of AI to the bot
