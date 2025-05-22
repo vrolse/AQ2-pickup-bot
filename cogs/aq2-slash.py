@@ -278,7 +278,7 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             with open(map_path, "rb") as file:
                 await user.send(f"Here is the map image for {mapname}:", file=disnake.File(file, map_filename))
             
-            await interaction.response.send_message("Map image sent as a direct message.", ephemeral=True)
+            await interaction.response.send_message("Map image sent as a DM.", ephemeral=True)
         else:
             await interaction.response.send_message(f"Map image for {mapname} not found.", ephemeral=True)
 
