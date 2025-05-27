@@ -7,3 +7,4 @@ bs4
 pollinations
 pollinations.ai
 packaging
+aiosqlite

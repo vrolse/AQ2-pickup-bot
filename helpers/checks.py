@@ -7,6 +7,7 @@ Version: 4.1
 """
 
 import json
+import disnake
 from typing import TypeVar, Callable
 
 from disnake.ext import commands
@@ -51,14 +52,14 @@ def admin() -> Callable[[T], T]:
     """
 
     async def predicate(context: commands.Context) -> bool:
+        if not context.guild or not isinstance(context.author, disnake.Member):
+            raise NotInGuild
         with open("config.json") as file:
             role_ids = json.load(file)["ROLE_ID"]
         if any(role.id in role_ids for role in context.author.roles):
-            print("HAPPY! :)", role_ids)
             return True
         else:
             print("NOT HAPPY! :(")
             raise UserNotAdmin
 
-    
     return commands.check(predicate)

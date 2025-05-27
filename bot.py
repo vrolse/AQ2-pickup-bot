@@ -229,6 +229,15 @@ async def on_slash_command_error(interaction: ApplicationCommandInteraction, err
         print("Someone with the wrong role tried to execute a command.")
         return await interaction.send(embed=embed, ephemeral=True)
     
+    elif isinstance(error, commands.errors.NotInGuild):
+        embed = disnake.Embed(
+            title="Error!",
+            description="This command can only be executed in a server!",
+            color=0xE02B2B
+        )
+        print("Someone tried to execute a command that can only be executed in a server.")
+        return await interaction.send(embed=embed, ephemeral=True)
+    
     raise error
 
 # Run the bot with the token

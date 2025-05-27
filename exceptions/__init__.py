@@ -35,3 +35,12 @@ class UserNotAdmin(commands.CheckFailure):
     def __init__(self, message="User is not an admin of the bot!"):
         self.message = message
         super().__init__(self.message)
+
+class NotInGuild(commands.CheckFailure):
+    """
+    Thrown when a user is attempting something, but is not in a guild.
+    """
+
+    def __init__(self, message="User is not in a guild!"):
+        self.message = message
+        super().__init__(self.message)
