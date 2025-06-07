@@ -22,6 +22,7 @@ from disnake.ext.commands import Context
 logging.getLogger("disnake").setLevel(logging.WARNING)
 logging.getLogger("disnake.client").setLevel(logging.WARNING)
 logging.getLogger("disnake.gateway").setLevel(logging.WARNING)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
 if not os.path.isfile("config.json"):
     sys.exit("'config.json' not found! Please add it and try again.")
@@ -51,7 +52,7 @@ async def on_ready():
 # Setup the game status task of the bot
 @tasks.loop(minutes=20.0)
 async def status_task():
-    statuses = ["AQ2!", "Pickups!", "with M4!", "with SSG!", "with knives!", "with HC!", "with MP5!", "with grenades!", "with Shotgun!", "with Slippers!, AQtion!"]
+    statuses = ["AQ2!", "Pickups!", "with M4!", "with SSG!", "with knives!", "with HC!", "with MP5!", "with grenades!", "with Shotgun!", "with Slippers!", "AQtion!", "AQ2 is life!", "AQ2 is love!", "AQ2 is fun!", "AQ2 is awesome!"]
     await bot.change_presence(activity=disnake.Game(random.choice(statuses)))
 
 ## Test new function to get match report from servers directly through q2admin ##
@@ -170,7 +171,7 @@ async def on_message(message: disnake.Message):
 @bot.event
 async def on_slash_command(interaction: ApplicationCommandInteraction):
     print(
-        f"{date:%Y-%m-%d %H:%M} -- Executed {interaction.data.name} command in {interaction.guild.name} (ID: {interaction.guild.id}) by {interaction.author} (ID: {interaction.author.id})")
+        f"{date:%Y-%m-%d %H:%M:%S} -- Executed {interaction.data.name} command in {interaction.guild.name} (ID: {interaction.guild.id}) by {interaction.author} (ID: {interaction.author.id})")
 
 # The code in this event is executed every time a normal command has been *successfully* executed
 @bot.event
@@ -179,7 +180,7 @@ async def on_command_completion(ctx):
     split = fullCommandName.split(" ")
     executedCommand = str(split[0])
     print(
-        f"{date:%Y-%m-%d %H:%M} -- Executed {executedCommand} command in {ctx.guild.name} (ID: {ctx.message.guild.id}) by {ctx.message.author} (ID: {ctx.message.author.id})")
+        f"{date:%Y-%m-%d %H:%M:%S} -- Executed {executedCommand} command in {ctx.guild.name} (ID: {ctx.message.guild.id}) by {ctx.message.author} (ID: {ctx.message.author.id})")
 
 # The code in this event is executed every time a valid slash command catches an error
 @bot.event

@@ -28,6 +28,14 @@ class Owner(commands.Cog, name="owner-slash"):
     def __init__(self, bot):
         self.bot = bot
 
+    async def reload_cogs(self, cogs_to_reload):
+        for cog_name in cogs_to_reload:
+            try:
+                self.bot.reload_extension(cog_name)
+                print(f"Cog {cog_name} reloaded successfully.")
+            except commands.ExtensionError as e:
+                print(f"Failed to reload cog {cog_name}: {e}")
+
     @commands.slash_command(
         name="blacklist",
         description="Get the list of all blacklisted users.",
@@ -213,6 +221,29 @@ class Owner(commands.Cog, name="owner-slash"):
 
         # Send the ephemeral response to the user who used the command
         await interaction.followup.send("\n".join(messages))
+
+
+    @commands.slash_command(
+            guild_ids=[GUILDID],
+            name="reload",
+            description="Reload all bot cogs (owner only)."
+            )
+    @checks.is_owner()
+    @checks.not_blacklisted()
+    async def reload(self, inter: disnake.ApplicationCommandInteraction):
+        if await self.bot.is_owner(inter.author):
+            await inter.response.defer(ephemeral=True)
+            
+            cogs_to_reload = []
+            for filename in os.listdir("./cogs"):
+                if filename.endswith(".py") and not filename.startswith("_"):
+                    cogs_to_reload.append(f"cogs.{filename[:-3]}")
+
+            await self.reload_cogs(cogs_to_reload)
+
+            await inter.edit_original_message(content=f"✅ Reloaded {len(cogs_to_reload)} cogs.")
+        else:
+            await inter.response.send_message("❌ You are not authorized to use this command.", ephemeral=True)
             
 def setup(bot):
     bot.add_cog(Owner(bot))

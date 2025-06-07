@@ -36,6 +36,7 @@ class UserNotAdmin(commands.CheckFailure):
         self.message = message
         super().__init__(self.message)
 
+
 class NotInGuild(commands.CheckFailure):
     """
     Thrown when a user is attempting something, but is not in a guild.

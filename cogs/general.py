@@ -26,7 +26,7 @@ else:
 #Add what needs to be loaded from config.json
 GUILDID = int(config["GUILD_ID"])
 
-class General(commands.Cog, name="general"):
+class General(commands.Cog, name="General"):
     def __init__(self, bot):
         self.bot = bot
 
@@ -88,6 +88,37 @@ class General(commands.Cog, name="general"):
             response = requests.get("https://api.chucknorris.io/jokes/random")
             joke = response.json()['value']
             await interaction.send(joke)
-    
+
+    @commands.slash_command(
+        name="help",
+        description="Shows a list of all available commands.",
+        guild_ids=[GUILDID]
+    )
+    @checks.not_blacklisted()
+    async def help_command(self, inter: disnake.ApplicationCommandInteraction):
+        embed = disnake.Embed(
+            title="📖 Bot Commands",
+            description="Here are all available commands:",
+            color=0x00BFFF
+        )
+
+        commands_by_cog = {}
+
+        # Collect commands from all cogs
+        for command in self.bot.slash_commands:
+            if not command.name:  # Skip if somehow no name
+                continue
+            cog_name = command.cog_name or "Other"
+            commands_by_cog.setdefault(cog_name, []).append(command)
+
+        for cog, cmds in commands_by_cog.items():
+            command_lines = []
+            for cmd in cmds:
+                command_lines.append(f"**/{cmd.name}** — {cmd.description or 'No description'}")
+            embed.add_field(name=cog, value="\n".join(command_lines), inline=False)
+
+        await inter.response.send_message(embed=embed, ephemeral=True)
+
+
 def setup(bot):
     bot.add_cog(General(bot))

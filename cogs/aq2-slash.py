@@ -12,11 +12,13 @@ import subprocess
 import os
 import disnake
 import sys
+import logging
 from datetime import datetime
 from tabulate import tabulate
-from disnake import ApplicationCommandInteraction
+from disnake import ApplicationCommandInteraction, Option, OptionType
 from disnake.ext import commands
 from helpers import checks
+from socket import gaierror, timeout
 
 # Only if you want to use variables that are in the config.json file.
 if not os.path.isfile("config.json"):
@@ -65,6 +67,8 @@ def get_server_details(aqserver: str):
             return server['ip'], server['port'], server['rcon']
     raise ValueError(f"Server '{aqserver}' not found.")
 
+logger = logging.getLogger(__name__)
+
 class Aq2(commands.Cog, name="AQ2-slash"):
     def __init__(self, bot):
         self.bot = bot
@@ -84,8 +88,10 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             conn = pyrcon.Q2RConnection(ip, port, rcon)
             result = conn.send('status v')
             await interaction.send(f'```yaml\n{result}\n```', ephemeral=True)
-        except ValueError:
-            await interaction.send(f'```yaml\nServer {aqserver} not found.\n```', ephemeral=True)
+
+        except (ValueError, gaierror, ConnectionRefusedError, timeout, OSError, Exception) as e:
+            logger.warning(f"[status] Error with server {aqserver}: {e}")
+            await interaction.send(f'```yaml\nServer {aqserver}\nSomething went wrong when sending command to the server.\n```', ephemeral=True)
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -99,8 +105,9 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             ip, port, rcon = get_server_details(aqserver)
             pyrcon.Q2RConnection(ip, port, rcon).send('gamemap ' + map)
             await interaction.send(f'```yaml\nMap changed to: {map}\nOn server: {aqserver}\n```')
-        except ValueError:
-            await interaction.send(f'```yaml\nServer {aqserver} not found.\n```', ephemeral=True)
+        except (ValueError, gaierror, ConnectionRefusedError, timeout, OSError, Exception) as e:
+            logger.warning(f"[changemap] Error with server {aqserver}: {e}")
+            await interaction.send(f'```yaml\nServer {aqserver}\nSomething went wrong when sending command to the server.\n```', ephemeral=True)
             
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -140,6 +147,9 @@ class Aq2(commands.Cog, name="AQ2-slash"):
                 
         except ValueError as e:
             await interaction.send(f'```yaml\n{e}\n```', ephemeral=True)
+        except (gaierror, ConnectionRefusedError, timeout, OSError, Exception) as e:
+            logger.warning(f"[lrcon] Error with server {aqserver}: {e}")
+            await interaction.send(f'```yaml\nServer {aqserver}\nSomething went wrong when sending command to the server.\n```', ephemeral=True)
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -155,6 +165,9 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             await interaction.send(f'`{aqserver}-server reset by {interaction.author.display_name}!`')
         except ValueError:
             await interaction.send(f'```yaml\nServer {aqserver} not found.\n```', ephemeral=True)
+        except (gaierror, ConnectionRefusedError, timeout, OSError, Exception) as e:
+            logger.warning(f"[reset] Error with server {aqserver}: {e}")
+            await interaction.send(f'```yaml\nServer {aqserver}\nSomething went wrong when sending command to the server.\n```', ephemeral=True)
 
     @commands.slash_command(
         guild_ids=[GUILDID],
@@ -257,6 +270,51 @@ class Aq2(commands.Cog, name="AQ2-slash"):
             await interaction.send(f"The server {aqserver} did not respond within the expected time.")
         except Exception as e:
             await interaction.send(f"An error occurred while checking the server")
+
+    @commands.slash_command(
+        guild_ids=[GUILDID],
+        name="checkip",
+        description="Check server by ip or ip:port.",
+        options=[
+            Option(
+                name="ip",
+                description="Fill in ip and/or port to the server.",
+                type=OptionType.string,
+                required=True
+            )
+        ],
+    )
+    @checks.not_blacklisted()
+    async def checkip(self, interaction: ApplicationCommandInteraction, ip: str = None):
+        if ip is None:
+            return await interaction.send("`Shiieeeet.. did you forget the IP?!`")
+        try:
+            qstat = [qs, '-q2s', f'{ip}', '-R', '-P', '-sort', 'F', '-json']
+            s = subprocess.check_output(qstat)
+            data = json.loads(s)
+            
+            if data[0]['status'] in ['offline', 'timeout']:
+                await interaction.send(f"The server is offline or not available.")
+            else:
+                player_headers = ['Player', 'Score', 'Ping']
+                player_data = []
+                team_data = []
+
+                if 't1' in data[0]['rules'] and 't2' in data[0]['rules']:
+                    team_data.append({'Team uno': data[0]['rules']['t1'], 'Team dos': data[0]['rules']['t2']})
+
+                    for player in data[0]['players']:
+                        player_data.append([player['name'], player['score'], player['ping']])
+
+                    map = data[0]['map']
+                    maptime = data[0]['rules']['maptime']
+                    teamscore = tabulate(team_data, headers='keys', tablefmt='rounded_outline', numalign='center')
+                    players = tabulate(player_data, headers=player_headers, tablefmt='simple', numalign='center')
+                    await interaction.send(f"```json\n{data[0]['name']}\n\nMap: {map}\nTime: {maptime}\n\n{teamscore}\n\n{players}```")
+        except subprocess.TimeoutExpired:
+            await interaction.send(f"The server did not respond within the expected time.")
+        except Exception as e:
+            await interaction.send("`Dang it! Invalid IP or not an AQ2-server 🤦‍`")
 
     @commands.slash_command(
         guild_ids=[GUILDID],
