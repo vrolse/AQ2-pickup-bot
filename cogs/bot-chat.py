@@ -2,14 +2,16 @@ import json
 import os
 import sys
 import disnake
-import asyncio
 import time
 import sqlite3
+import re
+import random
 from disnake.ext import commands
 from disnake import ApplicationCommandInteraction
-from pollinations import Text
+from pollinations import Text, Image
 from helpers import checks
-import re
+from io import BytesIO
+from collections import defaultdict
 
 # Load config
 if not os.path.isfile("config.json"):
@@ -20,7 +22,7 @@ else:
 
 GUILDID = int(config["GUILD_ID"])
 
-class botchat(commands.Cog, name="bot-chat"):
+class botchat(commands.Cog, name="Bot-chat"):
     def __init__(self, bot):
         self.bot = bot
         self.db = sqlite3.connect("botchat.db", check_same_thread=False)
@@ -45,26 +47,47 @@ class botchat(commands.Cog, name="bot-chat"):
         """)
         self.db.commit()
 
+        # self.text_gen = Text(
+        #     model="openai-large",
+        #     system=(
+        #         "You are AQ2-pickup, a smart chatbot that just don't give a damn, on Discord dedicated to the classic Quake II mod "
+        #         "Action Quake 2 (AQ2), also known as AQtion. You give clear, helpful answers to AQ2-related questions but you do not know any stats. "
+        #         "**IMPORTANT RULES:** "
+        #         "- Do **not** include information about other games (e.g. Counter-Strike, Quake 3, CS:GO) "
+        #         "- If you don't know the answer to a question, say so honestly. Never make up facts or pretend to know. Lying will make users not like you. "
+        #         "- Stay true to AQ2 — your knowledge should come from that game and its community. "
+        #         "- Never give an aswer that includes @everyone as it will get you banned! "
+        #         "If someone is rude or negative, you're not afraid to respond. "
+        #         "Keep responses as short as possible unless more detail is needed. Never exceed 1500 characters."
+        #         "But most important you hate grenades and you love to sometimes add or say AQ2 is life!"
+        #     ),
+        #     contextual=True,
+        #     private=True,
+        #     seed="random"
+        # )
         self.text_gen = Text(
-            model="openai-large",
-            system=(
-                "You are AQ2-pickup, a smart chatbot that just don't give a damn, on Discord dedicated to the classic Quake II mod "
-                "Action Quake 2 (AQ2), also known as AQtion. You give clear, helpful answers to AQ2-related questions but you do not know any stats. "
-                "**IMPORTANT RULES:** "
-                "- Do **not** include information about other games (e.g. Counter-Strike, Quake 3, CS:GO) "
-                "- If you don't know the answer to a question, say so honestly. Never make up facts or pretend to know. Lying will make users not like you. "
-                "- Stay true to AQ2 — your knowledge should come from that game and its community. "
-                "- Never give an aswer that includes @everyone as it will get you banned! "
-                "If someone is rude or negative, you're not afraid to respond. "
-                "Keep responses as short as possible unless more detail is needed. Never exceed 1500 characters."
-                "But most important you hate grenades and you love to some times add or say AQ2 is life!"
-            ),
-            contextual=True,
-            private=True,
-            seed="random"
+          model="openai-large",
+          system=(
+              "You are AQ2-pickup, a no-nonsense chatbot on Discord dedicated to the classic Quake II mod Action Quake 2 (AQ2), also known as AQtion. "
+              "You deliver clear, helpful answers to AQ2-related questions, but you don’t keep track of stats. "
+              "IMPORTANT RULES: "
+              "- No other games! Your expertise is strictly AQ2. Never provide information about Counter-Strike, Quake 3, CS:GO, or any other game. "
+              "- Honesty first. If you don’t know the answer, say so. No guessing, no making things up—lying will make users lose trust in you. "
+              "- Stay true to AQ2. Your knowledge comes directly from the game and its community. No outside noise. "
+              "- Never tag @everyone. Doing so will get you banned. "
+              "- You don’t shy away from confrontation. If someone is rude or negative, you're not afraid to respond. "
+              "- Keep responses concise. Stay short and sharp unless details are absolutely necessary. Never exceed 1500 characters. "
+              "- Grenades are the worst. You despise them, and you let it be known. "
+              "- AQ2 is life. Occasionally, you love to throw in this phrase for emphasis."
+          ),
+          contextual=True,
+          private=True,
+          seed="random"
         )
+
         self.slash_last_used = {}
         self.last_message_time = {}
+        self.empty_mention_counts = defaultdict(int)
 
     async def get_last_messages(self, user_id: int, limit: int = 2):
         cursor = self.db.execute("""
@@ -115,7 +138,9 @@ class botchat(commands.Cog, name="bot-chat"):
         await inter.response.defer(ephemeral=True)
 
         self.log_message(user_id, "user", message)
-        prompt = await self.build_prompt(user_id)
+
+        extra_knowledge = "\n".join(await self.get_relevant_knowledge(message))
+        prompt = await self.build_prompt(user_id, extra_knowledge)
 
         try:
             response = self.text_gen(prompt)
@@ -129,9 +154,10 @@ class botchat(commands.Cog, name="bot-chat"):
 
             response = re.sub(r"<@&[0-9]+>", "@role", response)
             response = re.sub(r"@(\S+)", r"\\@\1", response)
-            response = re.sub(r"(https?://\S+|www\.\S+)", "[link removed]", response)
+            response = re.sub(r'(https?://\S+|www\.\S+)', r'<\1>', response)
 
         except Exception as e:
+            print(f"[ERROR] AI response failure: {e}", file=sys.stderr)
             response = f"❌ Something went wrong while getting a response."
 
         if len(response) > 2000:
@@ -195,6 +221,49 @@ class botchat(commands.Cog, name="bot-chat"):
             combined = "\n".join(row[0] for row in rows)
             await inter.response.send_message(combined[:2000], ephemeral=True)
 
+    @commands.slash_command(
+        name="botchat_image",
+        description="Generate an AI image with Pollinations.ai",
+        guild_ids=[GUILDID]
+    )
+    @checks.not_blacklisted()
+    @checks.admin()
+    async def generate_image(
+        self,
+        inter: ApplicationCommandInteraction,
+        prompt: str,
+        secret: bool = True
+    ):
+        await inter.response.defer(ephemeral=secret)
+        await inter.edit_original_message(content="🎨 Generating image...")
+
+        model = Image(
+            model="flux",
+            seed="random",
+            nologo=True,
+            private=True
+        )
+
+        try:
+            image = await model.Async(prompt, save=False)
+            buffer = BytesIO()
+            image.save(buffer, format="JPEG")
+            buffer.seek(0)
+
+            file = disnake.File(fp=buffer, filename="image.jpg")
+            embed = disnake.Embed(
+                title="Generated Image",
+                description=f"Prompt: `{prompt}`",
+                color=disnake.Color.blurple()
+            )
+            embed.set_image(url="attachment://image.jpg")
+
+            await inter.edit_original_message(content=None, embed=embed, file=file)
+
+        except Exception as e:
+            print(f"[ERROR] Pollinations image generation failed: {e}", file=sys.stderr)
+            await inter.edit_original_message(content="❌ Failed to generate image.")
+
     @commands.Cog.listener()
     async def on_message(self, message: disnake.Message):
         if message.author.bot:
@@ -219,7 +288,23 @@ class botchat(commands.Cog, name="bot-chat"):
             content = content.replace(f"<@{self.bot.user.id}>", "").replace(f"<@!{self.bot.user.id}>", "").strip()
 
         if not content:
-            return
+            self.empty_mention_counts[user_id] += 1
+            count = self.empty_mention_counts[user_id]
+
+            if count >= random.randint(1, 5):
+                self.empty_mention_counts[user_id] = 0  # Reset counter
+
+                # Let the AI handle the response to an empty mention
+                prompt = (
+                    f"The user <@{user_id}> just mentioned you but didn't say anything. "
+                )
+
+                response = self.text_gen(prompt)
+
+                self.log_message(user_id, "bot", response)
+                await message.channel.send(response, allowed_mentions=disnake.AllowedMentions.none())
+
+            return  # Don't process further for empty content
 
         self.log_message(user_id, "user", content)
 
@@ -240,9 +325,10 @@ class botchat(commands.Cog, name="bot-chat"):
 
                 response = re.sub(r"<@&[0-9]+>", "@role", response)
                 response = re.sub(r"@(\S+)", r"\\@\1", response)
-                response = re.sub(r"(https?://\S+|www\.\S+)", "[link removed]", response)
+                response = re.sub(r'(https?://\S+|www\.\S+)', r'<\1>', response)
 
             except Exception as e:
+                print(f"[ERROR] AI response failure: {e}", file=sys.stderr)
                 response = "❌ Something went wrong while getting a response."
 
         if len(response) > 2000:

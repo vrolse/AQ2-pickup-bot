@@ -69,7 +69,7 @@ def get_server_details(aqserver: str):
 
 logger = logging.getLogger(__name__)
 
-class Aq2(commands.Cog, name="AQ2-slash"):
+class Aq2(commands.Cog, name="AQ2-Commands"):
     def __init__(self, bot):
         self.bot = bot
       

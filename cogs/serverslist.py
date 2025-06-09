@@ -37,7 +37,7 @@ logging.basicConfig(level=logging.INFO)
 GUILDID = int(config["GUILD_ID"])
 cogs_to_reload = ["cogs.aq2-slash", "cogs.serverslist"]
 
-class Servers(commands.Cog, name="servers"):
+class Servers(commands.Cog, name="Servers"):
     def __init__(self, bot):
         self.bot = bot
 

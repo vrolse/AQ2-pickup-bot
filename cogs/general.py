@@ -30,37 +30,6 @@ class General(commands.Cog, name="General"):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command(
-        name="botinfo",
-        description="Get some useful (or not) information about the bot.",
-    )
-    @checks.not_blacklisted()
-    async def botinfo(self, context: Context):
-        """
-        Get some useful (or not) information about the bot.
-        """
-        embed = disnake.Embed(
-            description="Used [Krypton's](https://krypt0n.co.uk) template",
-            color=0x9C84EF
-        )
-        embed.set_author(
-            name="Bot Information"
-        )
-        embed.add_field(
-            name="Owner:",
-            value="vrol#0480",
-            inline=True
-        )
-        embed.add_field(
-            name="Prefix:",
-            value="/ (Slash Commands)",
-            inline=False
-        )
-        embed.set_footer(
-            text=f"Requested by {context.author}"
-        )
-        await context.send(embed=embed, ephemeral=True)
-
     @commands.slash_command(
         guild_ids=[GUILDID],
         name="ping",

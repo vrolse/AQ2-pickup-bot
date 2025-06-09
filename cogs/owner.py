@@ -24,7 +24,7 @@ else:
 #Add what needs to be loaded from config.json
 GUILDID = int(config["GUILD_ID"])
 
-class Owner(commands.Cog, name="owner-slash"):
+class Owner(commands.Cog, name="Owner"):
     def __init__(self, bot):
         self.bot = bot
 
