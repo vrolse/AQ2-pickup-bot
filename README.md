@@ -27,7 +27,7 @@ Follow instructions for the bot-template, pyrcon, and qstat. Then, some more ste
 
 Feel free to manipulate this code as much as you want and for sure make it better. I'll help the best I can, but I'm not so fast to answer questions or even sit down at the computer. Also, big thanks to [kkrypt0nn](https://github.com/kkrypt0nn/), [texnofobix](https://github.com/texnofobix/), and [Unity-Technologies](https://github.com/Unity-Technologies/) for the great work with the tools I use to get this small project working.
 
-❤️ [pollinations.ai](https://pollinations.ai/) ❤️
+[pollinations.ai](https://pollinations.ai/) ❤️
 [pollinations.ai github](https://github.com/pollinations/)
 
 ## License
