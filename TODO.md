@@ -5,7 +5,7 @@
 - [x] Revise the way match results are reported:
   > Create a new Lua script so that all servers using it can send results to the bot. [Done]
 - [x] Extend functionality by adding more features, such as creating polls:
-  ~~ > Poll for server voting [Done] ~~
+  > ~~Poll for server voting [Done]~~
 - [ ] Consider updating the code to use a newer template or redoing it altogether.
 - [x] Address missing thumbnails:
   > Fixed existing issues; there might be more missing thumbnails [Done]
