@@ -42,6 +42,8 @@ update_config() {
     sed -i "s:PATH_TO_THUMBS:$DLDIRECTORY:g" AQ2-pickup/config.json
     sed -i "s:YOUR_EOL_MSG:$EOLMSG:g" AQ2-pickup/config.json
     sed -i "s-YOURBASEURL-$BASE_URL-g" AQ2-pickup/config.json
+    sed -i "s:YOUR_OPENAI_API_KEY:$OPENAI_API_KEY:g" AQ2-pickup/config.json
+    sed -i "s:YOUR_POLLINATIONS_API_KEY:$POLLINATIONS_API_KEY:g" AQ2-pickup/config.json
 }
 
 # Function to download files from GitHub repository in the background

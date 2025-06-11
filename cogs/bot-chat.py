@@ -1,3 +1,7 @@
+"""
+Work in progress:
+This cog allows users to chat with a bot. This bot uses Pollinations AI for text generation.
+"""
 import json
 import os
 import sys
@@ -12,6 +16,7 @@ from pollinations import Text, Image
 from helpers import checks
 from io import BytesIO
 from collections import defaultdict
+from openai import OpenAI
 
 # Load config
 if not os.path.isfile("config.json"):
@@ -21,6 +26,8 @@ else:
         config = json.load(file)
 
 GUILDID = int(config["GUILD_ID"])
+client = OpenAI(api_key=config["OPENAI_API_KEY"])
+POLLINATIONS_API_KEY = config["POLLINATIONS_API_KEY"]
 
 class botchat(commands.Cog, name="Bot-chat"):
     def __init__(self, bot):
@@ -47,42 +54,25 @@ class botchat(commands.Cog, name="Bot-chat"):
         """)
         self.db.commit()
 
-        # self.text_gen = Text(
-        #     model="openai-large",
-        #     system=(
-        #         "You are AQ2-pickup, a smart chatbot that just don't give a damn, on Discord dedicated to the classic Quake II mod "
-        #         "Action Quake 2 (AQ2), also known as AQtion. You give clear, helpful answers to AQ2-related questions but you do not know any stats. "
-        #         "**IMPORTANT RULES:** "
-        #         "- Do **not** include information about other games (e.g. Counter-Strike, Quake 3, CS:GO) "
-        #         "- If you don't know the answer to a question, say so honestly. Never make up facts or pretend to know. Lying will make users not like you. "
-        #         "- Stay true to AQ2 — your knowledge should come from that game and its community. "
-        #         "- Never give an aswer that includes @everyone as it will get you banned! "
-        #         "If someone is rude or negative, you're not afraid to respond. "
-        #         "Keep responses as short as possible unless more detail is needed. Never exceed 1500 characters."
-        #         "But most important you hate grenades and you love to sometimes add or say AQ2 is life!"
-        #     ),
-        #     contextual=True,
-        #     private=True,
-        #     seed="random"
-        # )
         self.text_gen = Text(
-          model="openai-large",
-          system=(
-              "You are AQ2-pickup, a no-nonsense chatbot on Discord dedicated to the classic Quake II mod Action Quake 2 (AQ2), also known as AQtion. "
-              "You deliver clear, helpful answers to AQ2-related questions, but you don’t keep track of stats. "
-              "IMPORTANT RULES: "
-              "- No other games! Your expertise is strictly AQ2. Never provide information about Counter-Strike, Quake 3, CS:GO, or any other game. "
-              "- Honesty first. If you don’t know the answer, say so. No guessing, no making things up—lying will make users lose trust in you. "
-              "- Stay true to AQ2. Your knowledge comes directly from the game and its community. No outside noise. "
-              "- Never tag @everyone. Doing so will get you banned. "
-              "- You don’t shy away from confrontation. If someone is rude or negative, you're not afraid to respond. "
-              "- Keep responses concise. Stay short and sharp unless details are absolutely necessary. Never exceed 1500 characters. "
-              "- Grenades are the worst. You despise them, and you let it be known. "
-              "- AQ2 is life. Occasionally, you love to throw in this phrase for emphasis."
-          ),
-          contextual=True,
-          private=True,
-          seed="random"
+            token=config["POLLINATIONS_API_KEY"],
+            model="openai-large",
+            system=(
+                "You are AQ2-pickup, a no-nonsense chatbot on Discord dedicated to the classic Quake II mod Action Quake 2 (AQ2), also known as AQtion. "
+                "You deliver clear, helpful answers to AQ2-related questions, but you don’t keep track of stats. "
+                "IMPORTANT RULES: "
+                "- No other games! Your expertise is strictly AQ2. Never provide information about Counter-Strike, Quake 3, CS:GO, or any other game. "
+                "- Honesty first. If you don’t know the answer, say so. No guessing, no making things up—lying will make users lose trust in you. "
+                "- Stay true to AQ2. Your knowledge comes directly from the game and its community. No outside noise. "
+                "- Never tag @everyone. Doing so will get you banned. "
+                "- You don’t shy away from confrontation. If someone is rude or negative, you're not afraid to respond. "
+                "- Keep responses concise. Stay short and sharp unless details are absolutely necessary. Never exceed 1500 characters. "
+                "- Grenades are the worst. You despise them, and you let it be known. "
+                "- AQ2 is life. Occasionally, you love to throw in this phrase for emphasis."
+            ),
+            contextual=True,
+            private=True,
+            seed="random"
         )
 
         self.slash_last_used = {}
@@ -123,6 +113,37 @@ class botchat(commands.Cog, name="Bot-chat"):
         """, (user_id, message_type, message, time.time()))
         self.db.commit()
 
+    def fallback_to_openai(self, prompt):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4.1-nano",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are AQ2-pickup, a no-nonsense chatbot on Discord dedicated to the classic Quake II mod Action Quake 2 (AQ2), also known as AQtion. "
+                            "You deliver clear, helpful answers to AQ2-related questions, but you don’t keep track of stats. "
+                            "IMPORTANT RULES: "
+                            "- No other games! Your expertise is strictly AQ2. Never provide information about Counter-Strike, Quake 3, CS:GO, or any other game. "
+                            "- Honesty first. If you don’t know the answer, say so. No guessing, no making things up—lying will make users lose trust in you. "
+                            "- Stay true to AQ2. Your knowledge comes directly from the game and its community. No outside noise. "
+                            "- Never tag @everyone. Doing so will get you banned. "
+                            "- You don’t shy away from confrontation. If someone is rude or negative, you're not afraid to respond. "
+                            "- Keep responses concise. Stay short and sharp unless details are absolutely necessary. Never exceed 1500 characters. "
+                            "- Grenades are the worst. You despise them, and you let it be known. "
+                            "- AQ2 is life. Occasionally, you love to throw in this phrase for emphasis."
+                        )
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=500,
+                temperature=0.8,
+            )
+            return response.choices[0].message.content
+        except Exception as e:
+            print(f"❌ OpenAI fallback failed: {e}")
+            return "Error: Major server meltdown. 🫠"
+
     @commands.slash_command(name="botchat", description="Chat with the bot!", guild_ids=[GUILDID])
     @checks.not_blacklisted()
     @checks.admin()
@@ -157,8 +178,8 @@ class botchat(commands.Cog, name="Bot-chat"):
             response = re.sub(r'(https?://\S+|www\.\S+)', r'<\1>', response)
 
         except Exception as e:
-            print(f"[ERROR] AI response failure: {e}", file=sys.stderr)
-            response = f"❌ Something went wrong while getting a response."
+            print(f"[ERROR] Pollinations AI response failure: {e}", file=sys.stderr)
+            response = self.fallback_to_openai(prompt)
 
         if len(response) > 2000:
             response = response[:1997] + "..."
@@ -328,8 +349,8 @@ class botchat(commands.Cog, name="Bot-chat"):
                 response = re.sub(r'(https?://\S+|www\.\S+)', r'<\1>', response)
 
             except Exception as e:
-                print(f"[ERROR] AI response failure: {e}", file=sys.stderr)
-                response = "❌ Something went wrong while getting a response."
+                print(f"[ERROR] Pollinations AI response failure: {e}", file=sys.stderr)
+                response = self.fallback_to_openai(prompt)
 
         if len(response) > 2000:
             response = response[:1997] + "..."

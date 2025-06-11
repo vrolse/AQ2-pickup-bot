@@ -8,3 +8,5 @@ pollinations
 pollinations.ai
 packaging
 sqlite3
+watchdog
+openai

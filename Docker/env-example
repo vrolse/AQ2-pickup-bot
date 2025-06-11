@@ -16,3 +16,5 @@ DIRECTORY=thumbnails
 DLDIRECTORY=path-to-thumbnails
 EOLMSG=your-eol-msg
 BASE_URL=url-to-maps
+OPENAI_API_KEY=your-openai-api-key
+POLLINATIONS_API_KEY=your-pollinations-api-key
