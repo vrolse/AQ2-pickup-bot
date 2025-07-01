@@ -25,6 +25,8 @@ Host the bot using Docker.
     DLDIRECTORY=path-to-thumbnails
     EOLMSG=your-eol-msg
     BASE_URL=URL-to-maps
+    OPENAI_API_KEY=your-openai-api-key
+    POLLINATIONS_API_KEY=your-pollinations-api-key
     ```
 
 2. You may need to make some changes to the bot's code as it is not perfect. Ensure you edit the delimiter character in `start.sh` so it works with the environment variables.
@@ -49,6 +51,8 @@ Host the bot using Docker.
 - `DLDIRECTORY`: Path to download thumbnails
 - `EOLMSG`: The message that should be sent to the bot in a DM for it to shut down and send the message in eol.py
 - `BASE_URL`: URL to maps
+- `OPENAI_API_KEY`: Openai-api-key
+- `POLLINATIONS_API_KEY`: Pollinations-api-key
 
 ## Notes
 
